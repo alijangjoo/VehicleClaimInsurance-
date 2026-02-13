@@ -41,16 +41,16 @@ public class JwtTokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.Id.ToString()),
             new Claim("username", user.UserName ?? ""),
-            new Claim("businessKey", user.BusinessKey.Value)
+            //new Claim("businessKey", user.BusinessKey.Value)
         };
 
         // اضافه کردن Personaها به claims
         if (personas != null && personas.Any())
         {
             var defaultPersona = personas.First();
-            claims.Add(new Claim("personaKey", defaultPersona.BusinessKey.Value));
-            claims.Add(new Claim("personaName", defaultPersona.Name));
-            claims.Add(new Claim("organizationKey", defaultPersona.OrganizationBusinessKey.Value));
+            //claims.Add(new Claim("personaKey", defaultPersona.BusinessKey.Value));
+            //claims.Add(new Claim("personaName", defaultPersona.Name));
+            //claims.Add(new Claim("organizationKey", defaultPersona.OrganizationBusinessKey.Value));
 
             // ذخیره همه Personaها در یک claim
             var personasJson = System.Text.Json.JsonSerializer.Serialize(
@@ -59,18 +59,18 @@ public class JwtTokenService : ITokenService
         }
 
         // اضافه کردن نقش‌ها
-        var roles = await _context.UserRoles
-            .Where(ur => ur.UserId == user.BusinessKey)
-            .Join(_context.Roles,
-                ur => ur.RoleId,
-                r => r.BusinessKey,
-                (ur, r) => r.Name)
-            .ToListAsync();
+        //var roles = await _context.UserRoles
+        //    .Where(ur => ur.UserId == user.BusinessKey)
+        //    .Join(_context.Roles,
+        //        ur => ur.RoleId,
+        //        r => r.BusinessKey,
+        //        (ur, r) => r.Name)
+        //    .ToListAsync();
 
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role ?? ""));
-        }
+        //foreach (var role in roles)
+        //{
+        //    claims.Add(new Claim(ClaimTypes.Role, role ?? ""));
+        //}
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -194,7 +194,7 @@ public class JwtTokenService : ITokenService
                 return false;
 
             var user = await _context.Users.FindAsync(long.Parse(userId));
-            return user != null && user.IsActive;
+            return user != null;
         }
         catch
         {
@@ -238,6 +238,6 @@ public class JwtTokenService : ITokenService
         if (string.IsNullOrEmpty(personaKeyValue))
             return null;
 
-        return BusinessKey.FromString(personaKeyValue);
+        return BusinessKey.FromGuid(Guid.Parse(personaKeyValue));
     }
 }

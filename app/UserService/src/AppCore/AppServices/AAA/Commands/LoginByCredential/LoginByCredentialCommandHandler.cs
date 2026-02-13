@@ -4,7 +4,6 @@ using Insurance.CacheService.Infra.CallerService.Abstractions;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using OysterFx.AppCore.AppServices.Commands;
 using OysterFx.AppCore.Shared.Commands.Common;
-using System;
 using System.Threading.Tasks;
 
 public class LoginByCredentialCommandHandler : CommandHandler<LoginByCredentialCommand, LoginByCredentialCommandResult?>
@@ -18,6 +17,7 @@ public class LoginByCredentialCommandHandler : CommandHandler<LoginByCredentialC
 
     public override async Task<CommandResult<LoginByCredentialCommandResult?>> Handle(LoginByCredentialCommand command)
     {
-        await _cacheServiceCaller.SetAsync(new(Key: $"user-{}-permissions", Value: ""));
+        await _cacheServiceCaller.SetAsync(new(Key: $"user--permissions", Value: ""));
+        return default;
     }
 }

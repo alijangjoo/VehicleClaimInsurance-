@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AuthenticationService = Insurance.UserService.AppCore.AppServices.AAA.Services.AuthenticationService;
+using IAuthenticationService = Insurance.UserService.AppCore.Shared.AAA.Services.IAuthenticationService;
 
 var builder = WebApplication.CreateBuilder(args);
 

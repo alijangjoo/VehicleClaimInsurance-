@@ -1,18 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Suspect.TaskPro.AppCore.Shared.AAA.Services;
-using Suspect.TaskPro.AppCore.Shared.AAA.Services.Dtos;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
+
 public class JwtTokenGenerator : IJwtTokenGeneratorService
 {
     private readonly IConfiguration _configuration;

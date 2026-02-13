@@ -34,6 +34,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\fx\src\Endpoints\OysterFx.Endpoints.Api\OysterFx.Endpoints.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\UserService\src\AppCore\Shared\Insurance.UserService.AppCore.Shared.csproj" />
     <ProjectReference Include="..\..\AppCore\AppServices\Insurance.AppCore.AppServices.csproj" />
     <ProjectReference Include="..\..\AppCore\Shared\Insurance.AppCore.Shared.csproj" />
     <ProjectReference Include="..\..\Infra\InternalServices\UserApiCaller\Insurance.Infra.InternalServices.UserApiCaller.csproj" />

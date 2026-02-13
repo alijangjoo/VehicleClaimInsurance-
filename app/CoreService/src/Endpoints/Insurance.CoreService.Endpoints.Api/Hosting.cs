@@ -1,10 +1,7 @@
 ﻿namespace Insurance.CoreService.Endpoints.Api;
 
 using Elastic.Apm.AspNetCore;
-using Elastic.Apm.NetCoreAll;
 using HealthChecks.UI.Client;
-using Insurance.AppCore.AppServices.AAA.Services;
-using Insurance.AppCore.Shared.AAA.Services;
 using Insurance.CoreService.Endpoints.Api.Extensions;
 using Insurance.CoreService.Endpoints.Api.Extensions.Db;
 using Insurance.CoreService.Endpoints.Api.Extensions.Swaggers.Extentions;
@@ -17,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OysterFx.Endpoints.Api.Extensions.DI;
 using OysterFx.Endpoints.Api.ModelBindings;
 using OysterFx.Infra.Auth.JwtServices;
+using Suspect.TaskPro.AppCore.Shared.AAA.Services;
 
 public static class Hosting
 {
@@ -40,7 +38,7 @@ public static class Hosting
         builder.Services.AddSwaggerDocumentation("Insurance Core Service API", "v1");
 
         builder.Services.AddUserServices(builder.Configuration);
-        builder.Services.AddTransient<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
+        // builder.Services.AddTransient<IJwtTokenGeneratorService, JwtTokenGeneratorService>(); / TODO
         builder.Services.AddJwtAuthentication(configuration);
         builder.Services.AddJwtUserInfoService();
         builder.Services.AddRateLimitServices(configuration);

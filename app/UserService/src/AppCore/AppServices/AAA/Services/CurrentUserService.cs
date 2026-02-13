@@ -1,9 +1,9 @@
-﻿using Insurance.UserService.AppCore.Domain.Users.Dtos;
+﻿namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
+
+using Insurance.UserService.AppCore.Domain.Users.Dtos;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Microsoft.AspNetCore.Http;
 using OysterFx.AppCore.Domain.ValueObjects;
-
-namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
@@ -35,7 +35,7 @@ public class CurrentUserService : ICurrentUserService
         get
         {
             var businessKeyClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("businessKey")?.Value;
-            return businessKeyClaim != null ? BusinessKey.FromString(businessKeyClaim) : null;
+            return businessKeyClaim != null ? BusinessKey.FromGuid(Guid.Parse(businessKeyClaim)) : null;
         }
     }
 
@@ -44,7 +44,7 @@ public class CurrentUserService : ICurrentUserService
         get
         {
             var personaKeyClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("personaKey")?.Value;
-            return personaKeyClaim != null ? BusinessKey.FromString(personaKeyClaim) : null;
+            return personaKeyClaim != null ? BusinessKey.FromGuid(Guid.Parse(personaKeyClaim)) : null;
         }
     }
 
@@ -57,7 +57,7 @@ public class CurrentUserService : ICurrentUserService
 
     public async Task<bool> HasPermissionAsync(string permissionCode)
     {
-        if (!UserId.HasValue || !CurrentPersonaKey.HasValue)
+        if (!UserId.HasValue || CurrentPersonaKey is null)
             return false;
 
         return await _authorizationService.HasPermissionAsync(

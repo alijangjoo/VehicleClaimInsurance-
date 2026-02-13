@@ -1,5 +1,6 @@
 ﻿using Insurance.UserService.AppCore.Domain.Users.Dtos;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
+using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,14 +12,14 @@ namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
 public class UserContextService : IUserContextService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ApplicationDbContext _context;
+    private readonly InsuranceUserServiceDbContext _context;
     private readonly IAuthorizationService _authorizationService;
     private readonly ILogger<UserContextService> _logger;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public UserContextService(
         IHttpContextAccessor httpContextAccessor,
-        ApplicationDbContext context,
+        InsuranceUserServiceDbContext context,
         IAuthorizationService authorizationService,
         ILogger<UserContextService> logger)
     {
@@ -135,10 +136,11 @@ public class UserContextService : IUserContextService
             return false;
 
         // بررسی دسترسی به Persona جدید
-        var hasAccess = await _context.UserPersonas
-            .AnyAsync(up => up.UserBusinessKey == BusinessKey.FromInt((int)userId.Value) &&
-                           up.PersonaBusinessKey == newPersonaKey);
-
+        //var hasAccess = await _context.UserPersonas
+        //    .AnyAsync(up => up.UserBusinessKey == BusinessKey.FromInt((int)userId.Value) &&
+        //                   up.PersonaBusinessKey == newPersonaKey);
+        // TODO: 
+        var hasAccess = true;
         if (!hasAccess)
             return false;
 
@@ -150,7 +152,8 @@ public class UserContextService : IUserContextService
             if (oldPersonaClaim != null)
                 identity?.RemoveClaim(oldPersonaClaim);
 
-            identity?.AddClaim(new Claim("personaKey", newPersonaKey.Value));
+            // identity?.AddClaim(new Claim("personaKey", newPersonaKey.Value));
+            // TODO
         }
 
         // بازسازی UserContext
@@ -183,6 +186,6 @@ public class UserContextService : IUserContextService
     private BusinessKey? GetCurrentPersonaKey()
     {
         var personaKeyClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("personaKey")?.Value;
-        return personaKeyClaim != null ? BusinessKey.FromString(personaKeyClaim) : null;
+        return personaKeyClaim != null ? BusinessKey.FromGuid(Guid.Parse(personaKeyClaim)) : null;
     }
 }

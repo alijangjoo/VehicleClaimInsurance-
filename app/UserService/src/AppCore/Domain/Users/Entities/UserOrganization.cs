@@ -36,9 +36,9 @@ public class UserOrganization : Entity<long>
     public bool IsActive { get; private set; }
 
     // Navigation Properties
-    public ApplicationUser User { get; private set; } = null!;
+    public AppUser User { get; private set; } = null!;
     public Organization Organization { get; private set; } = null!;
-    public Persona? Persona { get; private set; }
+    public OrganizationPersona? Persona { get; private set; }
 
     private UserOrganization() { }
 

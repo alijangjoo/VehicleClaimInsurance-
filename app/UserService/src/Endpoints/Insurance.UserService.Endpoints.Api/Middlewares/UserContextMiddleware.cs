@@ -1,8 +1,8 @@
 ﻿namespace Insurance.UserService.Endpoints.Api.Middlewares;
 
+using Insurance.UserService.AppCore.Shared.AAA.Services;
 using OysterFx.AppCore.Domain.ValueObjects;
 using System.Security.Claims;
-
 
 public class UserContextMiddleware
 {
@@ -24,7 +24,7 @@ public class UserContextMiddleware
             {
                 var userContext = await userContextService.BuildUserContextAsync(
                     long.Parse(userId),
-                    BusinessKey.FromString(personaKey));
+                    BusinessKey.FromGuid(Guid.Parse(personaKey)));
 
                 context.Items["UserContext"] = userContext;
             }

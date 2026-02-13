@@ -1,6 +1,7 @@
 ﻿namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
 
 using Insurance.UserService.AppCore.Domain.Common;
+using Insurance.UserService.AppCore.Domain.Users.Dtos;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
@@ -27,13 +28,17 @@ public class AuthenticationService : IAuthenticationService
         _context = context;
     }
 
+    public Task<UserContext> GetCurrentUserContextAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<AuthResult> LoginAsync(string username, string password)
     {
         var user = await _userManager.FindByNameAsync(username);
         if (user == null)
             return AuthResult.Failed("کاربر یافت نشد");
 
-        // بررسی انقضای کاربر
         if (user.UserExpirationDate.HasValue && user.UserExpirationDate < DateTime.UtcNow)
             return AuthResult.Failed("حساب کاربری منقضی شده است");
 
@@ -41,7 +46,6 @@ public class AuthenticationService : IAuthenticationService
 
         if (result.Succeeded)
         {
-            // دریافت Personaهای فعال کاربر
             var personas = await _context.UserPersonas
                 .Where(up => up.UserBusinessKey == user.BusinessKey)
                 .Select(up => up.Persona)
@@ -49,7 +53,7 @@ public class AuthenticationService : IAuthenticationService
 
             var token = await _tokenService.GenerateTokenAsync(user, personas);
 
-            return AuthResult.Success(token, user, personas);
+            return AuthResult.Success(token.AccessToken, user, personas);
         }
 
         if (result.IsLockedOut)
@@ -64,7 +68,6 @@ public class AuthenticationService : IAuthenticationService
         if (!result.IsSuccess)
             return result;
 
-        // بررسی دسترسی به Persona انتخاب شده
         var hasAccess = await _context.UserPersonas
             .AnyAsync(up => up.UserBusinessKey == result.User.BusinessKey &&
                            up.PersonaBusinessKey == personaKey);
@@ -72,9 +75,13 @@ public class AuthenticationService : IAuthenticationService
         if (!hasAccess)
             return AuthResult.Failed("دسترسی به این persona وجود ندارد");
 
-        // ایجاد توکن با Persona خاص
         var token = await _tokenService.GenerateTokenWithPersonaAsync(result.User, personaKey);
 
-        return AuthResult.Success(token, result.User, new[] { await _context.Personas.FindAsync(personaKey) });
+        return AuthResult.Success(token.AccessToken, result.User, new[] { await _context.Personas.FindAsync(personaKey) });
+    }
+
+    public Task LogoutAsync()
+    {
+        throw new NotImplementedException();
     }
 }
