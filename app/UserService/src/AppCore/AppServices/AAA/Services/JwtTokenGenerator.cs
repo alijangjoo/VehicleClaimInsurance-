@@ -1,0 +1,52 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Suspect.TaskPro.AppCore.Shared.AAA.Services;
+using Suspect.TaskPro.AppCore.Shared.AAA.Services.Dtos;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
+public class JwtTokenGenerator : IJwtTokenGeneratorService
+{
+    private readonly IConfiguration _configuration;
+
+    public JwtTokenGenerator(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    public async Task<string?> ExecuteAsync(string? mobileNumber, string userId)
+    {
+        var claims = new List<Claim>
+            {
+                new Claim("MobileNumber", mobileNumber!),
+                new Claim("UserId", userId!),
+            };
+
+        var jwtSecret = _configuration["Jwt:Secret"];
+        var jwtIssuer = _configuration["Jwt:Issuer"];
+        var jwtAudience = _configuration["Jwt:Audience"];
+        int.TryParse(_configuration["JwtSettings:ExpirationMinutes"], out int jwtExpirationMinutes);
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expires = DateTime.UtcNow.AddMinutes(jwtExpirationMinutes);
+
+        var token = new JwtSecurityToken(
+            issuer: jwtIssuer,
+            audience: jwtAudience,
+            claims: claims,
+            expires: expires,
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+}

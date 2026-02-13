@@ -1,0 +1,35 @@
+﻿namespace Insurance.UserService.Endpoints.Api.Middlewares;
+
+using OysterFx.AppCore.Domain.ValueObjects;
+using System.Security.Claims;
+
+
+public class UserContextMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public UserContextMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context, IUserContextService userContextService)
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var personaKey = context.User.FindFirst("PersonaKey")?.Value;
+
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(personaKey))
+            {
+                var userContext = await userContextService.BuildUserContextAsync(
+                    long.Parse(userId),
+                    BusinessKey.FromString(personaKey));
+
+                context.Items["UserContext"] = userContext;
+            }
+        }
+
+        await _next(context);
+    }
+}
