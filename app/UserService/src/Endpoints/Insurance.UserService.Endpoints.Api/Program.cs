@@ -7,6 +7,7 @@ using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore; // Add this using
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AuthenticationService = Insurance.UserService.AppCore.AppServices.AAA.Services.AuthenticationService;
@@ -14,11 +15,13 @@ using IAuthenticationService = Insurance.UserService.AppCore.Shared.AAA.Services
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<InsuranceUserServiceDbContext>(options =>
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+//options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<AppUser, AppRole>(options =>
 {
@@ -55,9 +58,9 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.AddHttpContextAccessor();
 
 // اضافه کردن سرویس‌ها
-builder.Services.AddScoped<ITokenService, JwtTokenService>();
-builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
-builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>(); // Duplicate registration, you can remove one
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>(); // Duplicate registration, you can remove one
+builder.Services.AddScoped<IUserContextService, UserContextService>(); // Duplicate registration, you can remove one
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // تنظیمات احراز هویت با JWT
@@ -99,6 +102,7 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -109,6 +113,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Don't forget to add Authentication middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

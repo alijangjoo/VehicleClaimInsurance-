@@ -18,6 +18,7 @@ public sealed class AppRole : IdentityRole<long>
     {
         Name = name.Trim();
         Scope = scope;
+        BusinessKey = BusinessKey.FromGuid(Guid.NewGuid());
     }
 
     public static AppRole NewRole(string name, RoleScope scope) => new(name, scope);

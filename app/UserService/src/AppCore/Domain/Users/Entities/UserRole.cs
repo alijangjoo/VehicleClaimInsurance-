@@ -1,11 +1,11 @@
 ﻿namespace Insurance.UserService.AppCore.Domain.Users.Entities;
 
+using Microsoft.AspNetCore.Identity;
 using OysterFx.AppCore.Domain.Aggregates;
 using OysterFx.AppCore.Domain.ValueObjects;
 
 public sealed class UserRole : Entity<long>
 {
-    public long Id { get; private set; }
     public BusinessKey UserId { get; private set; }
     public BusinessKey RoleId { get; private set; }
     public BusinessKey PersonaId { get; private set; }

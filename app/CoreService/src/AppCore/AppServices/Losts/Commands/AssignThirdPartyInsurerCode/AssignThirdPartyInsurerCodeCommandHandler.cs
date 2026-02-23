@@ -1,4 +1,4 @@
-﻿namespace Insurance.AppCore.AppServices.Losts.Entites.AssignThirdPartyInsurerCode;
+﻿namespace Insurance.AppCore.AppServices.Losts.Commands.AssignThirdPartyInsurerCode;
 
 using Insurance.AppCore.Domain.Parvandes.Entities;
 using Insurance.AppCore.Shared.Losts.Commands;
@@ -7,6 +7,9 @@ using OysterFx.AppCore.AppServices.Commands;
 using OysterFx.AppCore.Shared.Commands.Common;
 using System;
 
+/// <summary>
+/// صدور کد بیمه گران طرف قرارداد ثالث مالی
+/// </summary>
 public class AssignThirdPartyInsurerCodeCommandHandler : CommandHandler<AssignThirdPartyInsurerCodeCommand, Guid>
 {
     private readonly ILostCommandRepository _lostCommandRepository;

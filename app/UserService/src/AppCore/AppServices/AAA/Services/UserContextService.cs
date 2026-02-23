@@ -39,7 +39,7 @@ public class UserContextService : IUserContextService
                 .Include(u => u.UserPersonas)
                     .ThenInclude(up => up.Persona)
                 .Include(u => u.UserOrganizations)
-                    .ThenInclude(uo => uo.Organization)
+                //.ThenInclude(uo => uo.Organization)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
@@ -79,17 +79,16 @@ public class UserContextService : IUserContextService
 
             // دریافت سازمان‌های کاربر
             var organizations = user.UserOrganizations
-                .Where(uo => uo.IsActive && uo.Organization != null)
-                .Select(uo => uo.Organization!)
+                .Where(uo => uo.IsActive && uo.OrganizationBusinessKey != null)
+                .Select(uo => uo.OrganizationBusinessKey!)
                 .ToList();
 
-            userContext.Organizations = organizations;
+            userContext.Organizations = userContext.Organizations.Where(c => organizations.Contains(c.BusinessKey)).Select(c => c)?.ToList()!;
 
             // دریافت سازمان فعلی (بر اساس Persona انتخاب شده)
             if (userContext.CurrentPersona != null)
             {
-                userContext.CurrentOrganization = organizations
-                    .FirstOrDefault(o => o.BusinessKey == userContext.CurrentPersona.OrganizationBusinessKey);
+                userContext.CurrentOrganization = userContext.Organizations.FirstOrDefault(c => c.BusinessKey == userContext.CurrentPersona.OrganizationBusinessKey);
             }
 
             // دریافت مجوزهای کاربر برای Persona فعلی

@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  elasticsearch:
+    image: elastic.hamdocker.ir/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: elastic.hamdocker.ir/kibana/kibana:8.13.4
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - elastic
+    depends_on:
+      - elasticsearch
+
+  apm-server:
+    image: elastic.hamdocker.ir/apm/apm-server:8.13.4
+    container_name: apm-server
+    environment:
+      - output.elasticsearch.hosts=["http://elasticsearch:9200"]
+      - apm-server.host="0.0.0.0:8200"
+      - apm-server.secret_token="your_secret_token"
+      - apm-server.rum.enabled=true
+      - setup.kibana.host="kibana:5601"
+      - apm-server.capture_body="all"
+      - apm-server.capture_headers=true
+      - apm-server.transaction_sample_rate=1.0
+      - cloud.provider= none
+    ports:
+      - "8200:8200"
+    networks:
+      - elastic
+    depends_on:
+      - elasticsearch
+      - kibana
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

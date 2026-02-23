@@ -1,4 +1,4 @@
-﻿namespace Insurance.AppCore.AppServices.Losts.Entites.AssignHullThirdPartyInsurerCode;
+﻿namespace Insurance.AppCore.AppServices.Losts.Commands.AssignHullThirdPartyInsurerCode;
 
 using FluentValidation;
 using Insurance.AppCore.Shared.Losts.Commands.AssignHullThirdPartyInsurerCode;

@@ -1,6 +1,5 @@
 ﻿namespace Insurance.UserService.AppCore.Domain.Users.Entities;
 
-using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Enums;
 using OysterFx.AppCore.Domain.Aggregates;
 using OysterFx.AppCore.Domain.ValueObjects;
@@ -9,7 +8,7 @@ public class UserOrganization : Entity<long>
 {
     public BusinessKey UserBusinessKey { get; private set; }
     public BusinessKey OrganizationBusinessKey { get; private set; }
-
+    
     /// <summary>
     /// نوع انتصاب: مستقیم یا از طریق Persona
     /// </summary>
@@ -34,11 +33,6 @@ public class UserOrganization : Entity<long>
     /// وضعیت فعال/غیرفعال
     /// </summary>
     public bool IsActive { get; private set; }
-
-    // Navigation Properties
-    public AppUser User { get; private set; } = null!;
-    public Organization Organization { get; private set; } = null!;
-    public OrganizationPersona? Persona { get; private set; }
 
     private UserOrganization() { }
 

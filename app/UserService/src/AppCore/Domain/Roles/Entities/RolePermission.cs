@@ -9,9 +9,6 @@ public sealed class RolePermission : Entity<long>
     public BusinessKey RoleBusinessKey { get; private set; }
     public BusinessKey PermissionBusinessKey { get; private set; }
 
-    public AppRole Role { get; private set; } = null!;
-    public Permission Permission { get; private set; } = null!;
-
     private RolePermission() { }
 
     private RolePermission(BusinessKey roleBusinessKey, BusinessKey permissionBusinessKey)
