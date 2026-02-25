@@ -12,9 +12,15 @@ using System;
 /// </summary>
 public sealed class Lost : AggregateRoot
 {
-    public LostClaimantInfo ClaimantInfo { get; private set; }
+    public LostClaimantInfo LostClaimantInfo { get; private set; }
     public BusinessKey ProvinceBusinessKey { get; private set; }
     public BusinessKey CityBusinessKey { get; private set; }
+
+    /// <summary>
+    /// ارزیاب
+    /// </summary>
+    public BusinessKey AppraiserBusinessKey { get; private set; }
+
     /// <summary>
     /// محل وقوع حادثه
     /// </summary>
@@ -48,11 +54,6 @@ public sealed class Lost : AggregateRoot
     /// شعبه
     /// </summary>
     public string? Branch { get; private set; }
-
-    /// <summary>
-    /// ارزیاب
-    /// </summary>
-    public BusinessKey AppraiserBusinessKey { get; private set; }
 
     /// <summary>
     /// شهر بازدید
@@ -121,7 +122,7 @@ public sealed class Lost : AggregateRoot
         AccidentDateTime = accidentDateTime;
         AppraiserBusinessKey = appraiserBusinessKey;
         Branch = branch;
-        ClaimantInfo = LostClaimantInfo.CreateClaimantInfo(
+        LostClaimantInfo = LostClaimantInfo.CreateClaimantInfo(
             claimantInfo.InsuranceCompanyBusinessKey,
             claimantInfo.InsuranceCompanyBranch,
             claimantInfo.PolicyHolderInfo.Gender,

@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using OysterFx.Endpoints.Api.Extensions.DI;
 using OysterFx.Endpoints.Api.ModelBindings;
 using OysterFx.Infra.Auth.JwtServices;
-using Suspect.TaskPro.AppCore.Shared.AAA.Services;
 
 public static class Hosting
 {
@@ -29,7 +28,7 @@ public static class Hosting
             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables();
 
-        builder.Services.AddOysterFxApiCore("OysterFx", "Insurance.CoreService");
+        builder.Services.AddOysterFxApiCore("OysterFx", "Insurance", "Insurance.CoreService");
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddNonValidatingValidator();
         builder.Services.AddDatabase(configuration);

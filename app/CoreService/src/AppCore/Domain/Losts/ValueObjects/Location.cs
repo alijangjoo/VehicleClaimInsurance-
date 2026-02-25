@@ -1,12 +1,9 @@
 ﻿namespace Insurance.AppCore.Domain.Losts.ValueObjects;
 
-using global::Insurance.AppCore.Domain.BaseData.CarSystemAndTips.Enums;
 using Insurance.AppCore.Domain.Losts.BusinessRules;
-using OysterFx.AppCore.Domain.BusinessRules;
 using OysterFx.AppCore.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 public class Location : ValueObject
 {

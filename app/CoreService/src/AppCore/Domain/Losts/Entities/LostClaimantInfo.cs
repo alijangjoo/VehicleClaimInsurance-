@@ -5,52 +5,54 @@ using Insurance.AppCore.Domain.BaseData.VehiclePlates.Enums;
 using Insurance.AppCore.Domain.BaseData.VehiclePlates.ValueObjects;
 using Insurance.AppCore.Domain.Losts.Enums;
 using OysterFx.AppCore.Domain.Aggregates;
+using OysterFx.AppCore.Domain.ValueObjects;
 using System;
 
 public class LostClaimantInfo : Aggregate
 {
 
+    public BusinessKey LostBusinessKey { get; private set; }
     /// <summary>
     /// بیمه گر
     /// </summary>
-    public Guid InsuranceCompanyBusinessKey { get; set; }
+    public BusinessKey InsuranceCompanyBusinessKey { get; private set; }
     /// <summary>
     /// شعبه بیمه گر
     /// </summary>
-    public Guid InsuranceCompanyBranch { get; set; }
+    public BusinessKey InsuranceCompanyBranch { get; private set; }
     /// <summary>
     /// اطلاعات مالک/راننده
     /// </summary>
-    public PolicyHolderGender Gender { get; set; }
-    public string? PolicyHolderFullName { get; set; }
+    public PolicyHolderGender Gender { get; private set; }
+    public string? PolicyHolderFullName { get; private set; }
 
-    public string? FullName { get; set; }
-    public string? PhoneNumber { get; set; }
-    public string? MobileNumber { get; set; }
+    public string? FullName { get; private set; }
+    public string? PhoneNumber { get; private set; }
+    public string? MobileNumber { get; private set; }
     /// <summary>
     /// نوع خودرو
     /// </summary>
-    public GroupHeadType GroupHeadType { get; set; }
+    public GroupHeadType GroupHeadType { get; private set; }
     /// <summary>
     /// سیستم و تیپ خودرو
     /// </summary>
-    public Guid CarSystemAndTipBusinessKey { get; set; }
+    public Guid CarSystemAndTipBusinessKey { get; private set; }
     /// <summary>
     /// نوع پلاک
     /// </summary>
-    public VehiclePlateType VehiclePlateType { get; set; }
+    public VehiclePlateType VehiclePlateType { get; private set; }
     /// <summary>
     /// نمونه پلاک
     /// </summary>
-    public PlateModelType PlateModelType { get; set; }
+    public PlateModelType PlateModelType { get; private set; }
     /// <summary>
     /// طرح پلاک
     /// </summary>
-    public VehiclePlateDesign VehiclePlateDesign { get; set; }
+    public VehiclePlateDesign VehiclePlateDesign { get; private set; }
     /// <summary>
     /// پلاک
     /// </summary>
-    public VehiclePlate VehiclePlate { get; set; }
+    public VehiclePlate VehiclePlate { get; private set; }
     private LostClaimantInfo() { }
     private LostClaimantInfo(
         Guid insuranceCompanyBusinessKey,
