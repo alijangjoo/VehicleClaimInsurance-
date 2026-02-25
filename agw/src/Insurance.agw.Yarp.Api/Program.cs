@@ -1,4 +1,5 @@
-﻿using Elastic.Apm.AspNetCore;
+﻿using Elastic.Apm.Api;
+using Elastic.Apm.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
@@ -10,27 +11,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddElasticApmForAspNetCore();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = "your-issuer",
-            ValidAudience = "your-audience",
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("your-secret-key-minimum-32-characters-long"))
-        };
-    });
+/// TODO: موقتا غیر فعال شده است
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidateAudience = true,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             ValidIssuer = "your-issuer",
+//             ValidAudience = "your-audience",
+//             IssuerSigningKey = new SymmetricSecurityKey(
+//                 Encoding.UTF8.GetBytes("your-secret-key-minimum-32-characters-long"))
+//         };
+//     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Authenticated", policy =>
-        policy.RequireAuthenticatedUser());
-});
+// TODO: موقتا غیرفعال شده است
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("Authenticated", policy =>
+//        policy.RequireAuthenticatedUser());
+//});
 
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
@@ -62,14 +65,17 @@ builder.Services.AddReverseProxy()
         handler.ActivityHeadersPropagator = DistributedContextPropagator.CreateDefaultPropagator();
     });
 
+builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 Activity.ForceDefaultIdFormat = true;
 
 app.UseElasticApm();
-app.UseAuthentication();
-app.UseAuthorization();
+
+// موقتا غیرفعال شده است
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 

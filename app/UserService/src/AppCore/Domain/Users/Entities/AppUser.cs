@@ -2,7 +2,6 @@
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Roles.Enums;
 using Microsoft.AspNetCore.Identity;
-using OysterFx.AppCore.Domain.Aggregates;
 using OysterFx.AppCore.Domain.ValueObjects;
 
 namespace Insurance.UserService.AppCore.Domain.Users.Entities;
@@ -71,6 +70,16 @@ public sealed class AppUser : IdentityUser<long>
         UserName = username;
         Code = code;
     }
+
+    private AppUser(string mobileNumber, string? username)
+    {
+        MobileNumber = mobileNumber;
+        PhoneNumber = mobileNumber;
+        UserName = username;
+        PhoneNumberConfirmed = true;
+    }
+
+    public static AppUser NewUser(string mobileNumber, string userName) => new(mobileNumber, userName);
 
     public void AddRole(AppRole role, OrganizationPersona? persona = null)
     {

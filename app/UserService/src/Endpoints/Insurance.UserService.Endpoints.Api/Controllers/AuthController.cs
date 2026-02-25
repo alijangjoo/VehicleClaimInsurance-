@@ -1,8 +1,8 @@
 namespace Insurance.UserService.Endpoints.Api.Controllers;
 
+using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByOtp;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.VerifyLoginOtp;
-using Insurance.UserService.Endpoints.Api.Data;
 using Insurance.UserService.Endpoints.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -28,20 +28,14 @@ public class AuthController : OysterFxController
         if (existing != null)
             return BadRequest("Mobile number already exists.");
 
-        var user = new AppUser
-        {
-            MobileNumber = request.MobileNumber,
-            UserName = request.MobileNumber,
-            PhoneNumber = request.MobileNumber,
-            PhoneNumberConfirmed = true
-        };
+        var user = AppUser.NewUser(request.MobileNumber, request.MobileNumber);
 
         var result = await _userManager.CreateAsync(user);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        return Ok(new UserIdResponse(user.Id));
+        return Ok(new UserIdResponse(user.Id.ToString()));
     }
 
     [HttpGet("by-mobile/{mobileNumber}")]
@@ -52,7 +46,7 @@ public class AuthController : OysterFxController
         if (user == null)
             return NotFound("User not found.");
 
-        return Ok(new UserIdResponse(user.Id));
+        return Ok(new UserIdResponse(user.Id.ToString()));
     }
 
     [HttpPost("login/otp")]

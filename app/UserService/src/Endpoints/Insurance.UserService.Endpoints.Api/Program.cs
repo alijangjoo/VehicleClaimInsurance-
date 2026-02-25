@@ -4,20 +4,32 @@ using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore; // Add this using
 using Microsoft.IdentityModel.Tokens;
+using OysterFx.Endpoints.Api.Extensions.DI;
+using OysterFx.Endpoints.Api.ModelBindings;
 using System.Text;
 using AuthenticationService = Insurance.UserService.AppCore.AppServices.AAA.Services.AuthenticationService;
 using IAuthenticationService = Insurance.UserService.AppCore.Shared.AAA.Services.IAuthenticationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddOysterFxApiCore("OysterFx", "Insurance", "Insurance.UserService");
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddNonValidatingValidator();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "User Service API",
+        Version = "v1",
+        Description = "mobile-based user registration service"
+    });
+});
 
-builder.Services.AddOpenApi();
+// builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<InsuranceUserServiceDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -108,7 +120,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

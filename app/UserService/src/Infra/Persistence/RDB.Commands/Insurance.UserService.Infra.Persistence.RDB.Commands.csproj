@@ -13,5 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\..\fx\src\Infra\Persistence\RDB.Commands\OysterFx.Infra.Persistence.RDB.Commands.csproj" />
     <ProjectReference Include="..\..\..\AppCore\Domain\Insurance.UserService.AppCore.Domain.csproj" />
+    <ProjectReference Include="..\..\..\AppCore\Shared\Insurance.UserService.AppCore.Shared.csproj" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,8 @@
     <Project Path="agw/src/Insurance.agw.Yarp.Api/Insurance.agw.Yarp.Api.csproj" />
   </Folder>
   <Folder Name="/app/" />
+  <Folder Name="/app/AiAssistService/" />
+  <Folder Name="/app/AiAssistService/src/" />
   <Folder Name="/app/CacheService/" />
   <Folder Name="/app/CacheService/src/" />
   <Folder Name="/app/CacheService/src/Endpoints/">
