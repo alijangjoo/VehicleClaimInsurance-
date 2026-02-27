@@ -1,10 +1,9 @@
-﻿using Insurance.UserService.AppCore.Domain.Organizations.Entities;
-using Insurance.UserService.AppCore.Domain.Roles.Entities;
-using Insurance.UserService.AppCore.Domain.Roles.Enums;
-using Microsoft.AspNetCore.Identity;
-using OysterFx.AppCore.Domain.ValueObjects;
+﻿namespace Insurance.UserService.AppCore.Domain.Users.Entities;
 
-namespace Insurance.UserService.AppCore.Domain.Users.Entities;
+using Insurance.UserService.AppCore.Domain.Tenants.Entities;
+using Microsoft.AspNetCore.Identity;
+using OysterFx.AppCore.Domain.Exceptions;
+using OysterFx.AppCore.Domain.ValueObjects;
 
 /// <summary>
 /// کاربر -Aggregate Root
@@ -12,106 +11,72 @@ namespace Insurance.UserService.AppCore.Domain.Users.Entities;
 public sealed class AppUser : IdentityUser<long>
 {
     public BusinessKey BusinessKey { get; private set; }
+
     public string? Code { get; private set; }
     public string? FullName { get; private set; }
     public string? City { get; private set; }
     public string? Province { get; private set; }
 
-    /// <summary>
-    /// سقف مجاز کارشناسی
-    /// </summary>
-    public decimal MaxAllowedExpertiseAmount { get; private set; } // 0 = unlimited
+    public decimal MaxAllowedExpertiseAmount { get; private set; }
+    public decimal MaxAllowedDailyCaseReferral { get; private set; }
+    public decimal MaxAllowedOpenCases { get; private set; }
 
-    /// <summary>
-    /// سقف مجاز ارجاع پرونده در روز
-    /// </summary>
-    public decimal MaxAllowedDailyCaseReferral { get; private set; } // 0 = unlimited
-
-    /// <summary>
-    /// سقف مجاز پرونده‌های باز
-    /// </summary>
-    public decimal MaxAllowedOpenCases { get; private set; } // 0 = unlimited
-
-    /// <summary>
-    /// شناسه دستگاه GPS
-    /// </summary>
     public string? GPSDeviceId { get; private set; }
     public string? MobileNumber { get; private set; }
 
-    /// <summary>
-    /// تصویر پروفایل به صورت Base64
-    /// </summary>
     public string? ProfileImageBase64 { get; private set; }
 
-    /// <summary>
-    /// تاریخ انقضای کاربر
-    /// </summary>
     public DateTime? UserExpirationDate { get; private set; }
-
-    /// <summary>
-    /// تاریخ انقضای رمز عبور
-    /// </summary>
     public DateTime? PasswordExpirationDate { get; private set; }
 
-    private readonly List<UserOrganization> _userOrganizations = new();
-    public IReadOnlyCollection<UserOrganization> UserOrganizations => _userOrganizations.AsReadOnly();
-
-    private readonly List<UserRole> _userRoles = new();
-    public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
-
-    private readonly List<UserPersona> _userPersonas = new();
-    public IReadOnlyCollection<UserPersona> UserPersonas => _userPersonas.AsReadOnly();
+    private readonly List<UserMembership> _memberships = new();
+    public IReadOnlyCollection<UserMembership> Memberships => _memberships.AsReadOnly();
 
     private AppUser() { }
 
-    private AppUser(string email, string? username, string? code)
+    private AppUser(string mobileNumber, string userName)
     {
-        Email = email;
-        UserName = username;
-        Code = code;
-    }
+        if (string.IsNullOrWhiteSpace(mobileNumber))
+            throw new AggregateStateExceptions("Mobile number is required.", "");
 
-    private AppUser(string mobileNumber, string? username)
-    {
+        BusinessKey = BusinessKey.FromGuid(Guid.NewGuid());
         MobileNumber = mobileNumber;
         PhoneNumber = mobileNumber;
-        UserName = username;
+        UserName = userName;
         PhoneNumberConfirmed = true;
     }
 
-    public static AppUser NewUser(string mobileNumber, string userName) => new(mobileNumber, userName);
+    public static AppUser NewUser(string mobileNumber, string userName)
+        => new(mobileNumber, userName);
 
-    public void AddRole(AppRole role, OrganizationPersona? persona = null)
+    public void AddMembership(
+        TenantId tenantId,
+        BusinessKey organizationBusinessKey,
+        DateTime startDate)
     {
-        if (role == null) throw new ArgumentNullException(nameof(role));
+        if (_memberships.Any(x =>
+                x.TenantId == tenantId &&
+                x.OrganizationBusinessKey == organizationBusinessKey &&
+                x.IsActive))
+            throw new AggregateStateExceptions("User already has active membership in this organization.", "");
 
-        ValidateRoleAssignment(role, persona);
+        var membership = UserMembership.Create(
+            this.BusinessKey,
+            tenantId,
+            organizationBusinessKey,
+            startDate);
 
-        var userRole = UserRole.AssignUserRole(BusinessKey, role.BusinessKey, persona.BusinessKey);
-        _userRoles.Add(userRole);
+        _memberships.Add(membership);
     }
 
-    public void AddPersona(OrganizationPersona persona)
+    public void DeactivateMembership(BusinessKey membershipBusinessKey)
     {
-        if (persona == null) throw new ArgumentNullException(nameof(persona));
+        var membership = _memberships
+            .FirstOrDefault(x => x.BusinessKey == membershipBusinessKey);
 
-        var userPersona = UserPersona.AssignUserPersona(BusinessKey, persona.BusinessKey);
-        _userPersonas.Add(userPersona);
-    }
+        if (membership is null)
+            throw new AggregateStateExceptions("Membership not found.", "");
 
-    private void ValidateRoleAssignment(AppRole role, OrganizationPersona? persona)
-    {
-        switch (role.Scope)
-        {
-            case RoleScope.System:
-                if (persona != null)
-                    throw new InvalidOperationException("System roles cannot be assigned to personas");
-                break;
-            case RoleScope.Organization:
-            case RoleScope.Application:
-                if (persona == null)
-                    throw new InvalidOperationException($"Role scope '{role.Scope}' requires a persona");
-                break;
-        }
+        membership.Deactivate();
     }
 }

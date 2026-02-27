@@ -31,7 +31,7 @@ public class JwtTokenService : ITokenService
         _logger = logger;
     }
 
-    public async Task<TokenResult> GenerateTokenAsync(AppUser user, IEnumerable<OrganizationPersona> personas)
+    public async Task<TokenResult> GenerateTokenAsync(AppUser user, IEnumerable<UserMembership> memberships)
     {
         var claims = new List<Claim>
         {
@@ -41,36 +41,40 @@ public class JwtTokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.Id.ToString()),
             new Claim("username", user.UserName ?? ""),
-            //new Claim("businessKey", user.BusinessKey.Value)
+            new Claim("businessKey", user.BusinessKey.Value.ToString())
         };
 
-        // اضافه کردن Personaها به claims
-        if (personas != null && personas.Any())
+        // اضافه کردن Membershipها به claims
+        if (memberships != null && memberships.Any())
         {
-            var defaultPersona = personas.First();
-            //claims.Add(new Claim("personaKey", defaultPersona.BusinessKey.Value));
-            //claims.Add(new Claim("personaName", defaultPersona.Name));
-            //claims.Add(new Claim("organizationKey", defaultPersona.OrganizationBusinessKey.Value));
+            var defaultMembership = memberships.First();
+            claims.Add(new Claim("currentMembershipKey", defaultMembership.BusinessKey.Value.ToString()));
+            claims.Add(new Claim("currentOrganizationKey", defaultMembership.OrganizationBusinessKey.Value.ToString()));
 
-            // ذخیره همه Personaها در یک claim
-            var personasJson = System.Text.Json.JsonSerializer.Serialize(
-                personas.Select(p => new { p.BusinessKey.Value, p.Name }));
-            claims.Add(new Claim("personas", personasJson));
+            var membershipsJson = new List<object>();
+
+            foreach (var m in memberships)
+            {
+                // دریافت نقش‌ها از DbContext
+                //var roleNames = await _context.UserRoles
+                //    .Where(ur => ur.UserId == m.UserBusinessKey) // یا BusinessKey
+                //    .Join(_context.Roles,
+                //          ur => ur.RoleId,
+                //          r => r.BusinessKey,
+                //          (ur, r) => r.Name)
+                //    .ToListAsync();
+
+                //membershipsJson.Add(new
+                //{
+                //    BusinessKey = m.BusinessKey.Value,
+                //    OrganizationKey = m.OrganizationBusinessKey.Value,
+                //    Roles = roleNames
+                //});
+            }
+
+            var membershipsJsonStr = System.Text.Json.JsonSerializer.Serialize(membershipsJson);
+            claims.Add(new Claim("memberships", membershipsJsonStr));
         }
-
-        // اضافه کردن نقش‌ها
-        //var roles = await _context.UserRoles
-        //    .Where(ur => ur.UserId == user.BusinessKey)
-        //    .Join(_context.Roles,
-        //        ur => ur.RoleId,
-        //        r => r.BusinessKey,
-        //        (ur, r) => r.Name)
-        //    .ToListAsync();
-
-        //foreach (var role in roles)
-        //{
-        //    claims.Add(new Claim(ClaimTypes.Role, role ?? ""));
-        //}
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -95,15 +99,18 @@ public class JwtTokenService : ITokenService
         };
     }
 
-    public async Task<TokenResult> GenerateTokenWithPersonaAsync(AppUser user, BusinessKey personaKey)
+    public async Task<TokenResult> GenerateTokenWithMembershipAsync(AppUser user, BusinessKey membershipKey)
     {
-        var persona = await _context.Personas
-            .FirstOrDefaultAsync(p => p.BusinessKey == personaKey);
+        //var membership = await _context.UserMemberships
+        //    .Include(m => m.Organization)
+        //    .FirstOrDefaultAsync(m => m.BusinessKey == membershipKey);
 
-        if (persona == null)
-            throw new InvalidOperationException("Persona not found");
+        //if (membership == null)
+        //    throw new InvalidOperationException("Membership not found");
 
-        return await GenerateTokenAsync(user, new[] { persona });
+        //return await GenerateTokenAsync(user, new[] { membership });
+
+        return default!;
     }
 
     private async Task<string> GenerateRefreshTokenAsync(long userId)
@@ -122,8 +129,7 @@ public class JwtTokenService : ITokenService
             IsRevoked = false
         };
 
-        // ذخیره در دیتابیس (شما باید یک DbSet<RefreshToken> به Context اضافه کنید)
-        await _context.Set<RefreshToken>().AddAsync(refreshTokenEntity);
+        await _context.RefreshTokens.AddAsync(refreshTokenEntity);
         await _context.SaveChangesAsync();
 
         return refreshToken;
@@ -137,38 +143,33 @@ public class JwtTokenService : ITokenService
 
         var userId = long.Parse(principal.FindFirst("userId")?.Value ?? "0");
 
-        // بررسی Refresh Token
-        var storedRefreshToken = await _context.Set<RefreshToken>()
+        var storedRefreshToken = await _context.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.UserId == userId);
 
-        if (storedRefreshToken == null ||
-            storedRefreshToken.IsRevoked ||
-            storedRefreshToken.ExpirationDate < DateTime.UtcNow)
+        if (storedRefreshToken == null || storedRefreshToken.IsRevoked || storedRefreshToken.ExpirationDate < DateTime.UtcNow)
             throw new SecurityTokenException("Invalid refresh token");
 
-        // دریافت کاربر
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
             throw new SecurityTokenException("User not found");
 
-        // دریافت Personaهای کاربر
-        var personas = await _context.UserPersonas
-            .Where(up => up.UserBusinessKey == user.BusinessKey)
-            .Select(up => up.Persona)
-            .ToListAsync();
+        // دریافت Membershipهای کاربر
+        //var memberships = await _context.UserMemberships
+        //    .Include(m => m.Organization)
+        //    .Where(m => m.UserBusinessKey == user.BusinessKey)
+        //    .ToListAsync();
 
-        // Revoke old refresh token
-        storedRefreshToken.IsRevoked = true;
-        storedRefreshToken.ReasonRevoked = "Replaced by new token";
-        await _context.SaveChangesAsync();
+        //storedRefreshToken.IsRevoked = true;
+        //storedRefreshToken.ReasonRevoked = "Replaced by new token";
+        //await _context.SaveChangesAsync();
 
-        // Generate new tokens
-        return await GenerateTokenAsync(user, personas);
+        //return await GenerateTokenAsync(user, memberships);
+        return default!;
     }
 
     public async Task<bool> RevokeTokenAsync(string refreshToken)
     {
-        var storedRefreshToken = await _context.Set<RefreshToken>()
+        var storedRefreshToken = await _context.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
         if (storedRefreshToken == null)
@@ -186,12 +187,10 @@ public class JwtTokenService : ITokenService
         try
         {
             var principal = GetPrincipalFromToken(token);
-            if (principal == null)
-                return false;
+            if (principal == null) return false;
 
             var userId = principal.FindFirst("userId")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return false;
+            if (string.IsNullOrEmpty(userId)) return false;
 
             var user = await _context.Users.FindAsync(long.Parse(userId));
             return user != null;
@@ -220,8 +219,7 @@ public class JwtTokenService : ITokenService
                 ClockSkew = TimeSpan.Zero
             };
 
-            var principal = tokenHandler.ValidateToken(token, parameters, out _);
-            return principal;
+            return tokenHandler.ValidateToken(token, parameters, out _);
         }
         catch (Exception ex)
         {
@@ -230,14 +228,14 @@ public class JwtTokenService : ITokenService
         }
     }
 
-    public async Task<BusinessKey?> GetCurrentPersonaFromTokenAsync(string token)
+    public async Task<BusinessKey?> GetCurrentMembershipFromTokenAsync(string token)
     {
         var principal = GetPrincipalFromToken(token);
-        var personaKeyValue = principal?.FindFirst("personaKey")?.Value;
+        var membershipKeyValue = principal?.FindFirst("currentMembershipKey")?.Value;
 
-        if (string.IsNullOrEmpty(personaKeyValue))
+        if (string.IsNullOrEmpty(membershipKeyValue))
             return null;
 
-        return BusinessKey.FromGuid(Guid.Parse(personaKeyValue));
+        return BusinessKey.FromGuid(Guid.Parse(membershipKeyValue));
     }
 }

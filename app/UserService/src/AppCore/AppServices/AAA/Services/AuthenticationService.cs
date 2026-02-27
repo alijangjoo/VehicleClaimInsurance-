@@ -35,49 +35,51 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<AuthResult> LoginAsync(string username, string password)
     {
-        var user = await _userManager.FindByNameAsync(username);
-        if (user == null)
-            return AuthResult.Failed("کاربر یافت نشد");
+        return default!;
+        //var user = await _userManager.FindByNameAsync(username);
+        //if (user == null)
+        //    return AuthResult.Failed("کاربر یافت نشد");
 
-        if (user.UserExpirationDate.HasValue && user.UserExpirationDate < DateTime.UtcNow)
-            return AuthResult.Failed("حساب کاربری منقضی شده است");
+        //if (user.UserExpirationDate.HasValue && user.UserExpirationDate < DateTime.UtcNow)
+        //    return AuthResult.Failed("حساب کاربری منقضی شده است");
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, password, true);
+        //var result = await _signInManager.CheckPasswordSignInAsync(user, password, true);
 
-        if (result.Succeeded)
-        {
-            var personas = await _context.UserPersonas
-                .Where(up => up.UserBusinessKey == user.BusinessKey)
-                .Select(up => up.Persona)
-                .ToListAsync();
+        //if (result.Succeeded)
+        //{
+        //    var personas = await _context.UserPersonas
+        //        .Where(up => up.UserBusinessKey == user.BusinessKey)
+        //        .Select(up => up.Persona)
+        //        .ToListAsync();
 
-            var token = await _tokenService.GenerateTokenAsync(user, personas);
+        //    var token = await _tokenService.GenerateTokenAsync(user, personas);
 
-            return AuthResult.Success(token.AccessToken, user, personas);
-        }
+        //    return AuthResult.Success(token.AccessToken, user, personas);
+        //}
 
-        if (result.IsLockedOut)
-            return AuthResult.Failed("حساب کاربری قفل شده است");
+        //if (result.IsLockedOut)
+        //    return AuthResult.Failed("حساب کاربری قفل شده است");
 
-        return AuthResult.Failed("نام کاربری یا رمز عبور اشتباه است");
+        //return AuthResult.Failed("نام کاربری یا رمز عبور اشتباه است");
     }
 
     public async Task<AuthResult> LoginWithPersonaAsync(string username, string password, BusinessKey personaKey)
     {
-        var result = await LoginAsync(username, password);
-        if (!result.IsSuccess)
-            return result;
+        return default!;
+        //var result = await LoginAsync(username, password);
+        //if (!result.IsSuccess)
+        //    return result;
 
-        var hasAccess = await _context.UserPersonas
-            .AnyAsync(up => up.UserBusinessKey == result.User.BusinessKey &&
-                           up.PersonaBusinessKey == personaKey);
+        //var hasAccess = await _context.UserPersonas
+        //    .AnyAsync(up => up.UserBusinessKey == result.User.BusinessKey &&
+        //                   up.PersonaBusinessKey == personaKey);
 
-        if (!hasAccess)
-            return AuthResult.Failed("دسترسی به این persona وجود ندارد");
+        //if (!hasAccess)
+        //    return AuthResult.Failed("دسترسی به این persona وجود ندارد");
 
-        var token = await _tokenService.GenerateTokenWithPersonaAsync(result.User, personaKey);
+        //var token = await _tokenService.GenerateTokenWithPersonaAsync(result.User, personaKey);
 
-        return AuthResult.Success(token.AccessToken, result.User, new[] { await _context.Personas.FindAsync(personaKey) });
+        //return AuthResult.Success(token.AccessToken, result.User, new[] { await _context.Personas.FindAsync(personaKey) });
     }
 
     public Task LogoutAsync()

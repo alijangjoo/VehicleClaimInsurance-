@@ -24,8 +24,8 @@ public class OtpGeneratorDomainService : IOtpGeneratorDomainService
         }
 
         var otpCode = OtpCode.Create(mobileNumber, code.ToString(), TimeSpan.FromMinutes(2));
-        await _otpCodeCommandRepository.InsertAsync(otpCode);
-        await _otpCodeCommandRepository.CommitAsync();
+        //await _otpCodeCommandRepository.InsertAsync(otpCode);
+        //await _otpCodeCommandRepository.CommitAsync();
 
         return code.ToString();
     }

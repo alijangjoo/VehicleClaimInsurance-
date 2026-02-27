@@ -4,9 +4,10 @@ using Insurance.UserService.AppCore.Domain.Common;
 using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Permissions.Entities;
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
+using Insurance.UserService.AppCore.Domain.Tenants.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.Infra.Persistence.RDB.Commands.Extensions;
-using Microsoft.AspNetCore.Identity;
+using Insurance.UserService.Infra.Persistence.RDB.Commands.ValueConversions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -15,32 +16,37 @@ using OysterFx.AppCore.Domain.ValueObjects;
 using OysterFx.Infra.Persistence.RDB.Commands.Interceptors;
 using OysterFx.Infra.Persistence.RDB.Commands.ValueConversions;
 using System.Globalization;
+using System.Reflection.Emit;
 
 public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole, long>
 {
     public InsuranceUserServiceDbContext(DbContextOptions<InsuranceUserServiceDbContext> options) : base(options) { }
-
     public InsuranceUserServiceDbContext() { }
 
+    // ===========================
+    // DbSets
+    // ===========================
     public DbSet<Organization> Organizations { get; set; }
-    public DbSet<OrganizationPersona> Personas { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
-    public DbSet<UserPersona> UserPersonas { get; set; }
+    public DbSet<UserMembership> UserMemberships { get; set; }
+    public DbSet<UserRoleAssignment> UserRoleAssignments { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    // ===========================
+    // Shadow Property Helpers
+    // ===========================
     public T? GetShadowPropertyValue<T>(object entity, string propertyName) where T : IConvertible
     {
         var value = Entry(entity).Property(propertyName).CurrentValue;
-        return value != null
-            ? (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture)
-            : default;
+        return value != null ? (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture) : default;
     }
 
     public object GetShadowPropertyValue(object entity, string propertyName)
     {
         return Entry(entity).Property(propertyName).CurrentValue!;
     }
+
     public IEnumerable<string> GetIncludePaths(Type clrEntityType)
     {
         var entityType = Model.FindEntityType(clrEntityType);
@@ -54,6 +60,7 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
                 if (includedNavigations.Add(navigation))
                     entityNavigations.Add(navigation);
             }
+
             if (entityNavigations.Count == 0)
             {
                 if (stack.Count > 0)
@@ -69,19 +76,55 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
                 }
                 stack.Push(entityNavigations.GetEnumerator());
             }
+
             while (stack.Count > 0 && !stack.Peek().MoveNext())
                 stack.Pop();
+
             if (stack.Count == 0) break;
             entityType = stack.Peek().Current.TargetEntityType;
         }
     }
 
+    // ===========================
+    // Role Indexes (Tenant-Aware)
+    // ===========================
+    private void ConfigureRoleIndexes(ModelBuilder builder)
+    {
+        var role = builder.Entity<AppRole>();
+
+        // Remove default Identity index
+        role.Metadata
+            .GetIndexes()
+            .Where(i => i.Properties.Any(p => p.Name == "NormalizedName"))
+            .ToList()
+            .ForEach(i => role.Metadata.RemoveIndex(i));
+
+        var isPostgres = Database.ProviderName?.Contains("Npgsql") == true;
+
+        var index = role
+            .HasIndex(r => new { r.TenantId, r.NormalizedName })
+            .IsUnique();
+
+        if (isPostgres)
+            index.HasFilter("\"NormalizedName\" IS NOT NULL");
+        else
+            index.HasFilter("[NormalizedName] IS NOT NULL");
+    }
+
+    // ===========================
+    // OnModelCreating
+    // ===========================
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
+        ConfigureRoleIndexes(builder);
+
         builder.AddAuditableShadowProperties();
 
+        // ========================
+        // RefreshToken
+        // ========================
         builder.Entity<RefreshToken>(entity =>
         {
             entity.HasKey(e => e.Token);
@@ -93,62 +136,70 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             entity.Property(e => e.ReplacedByToken).HasMaxLength(500);
         });
 
+        // ========================
+        // AppUser
+        // ========================
         builder.Entity<AppUser>(entity =>
         {
             entity.ToTable("Users");
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
+            entity.Property(e => e.BusinessKey)
+                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+                  .IsRequired();
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
+        // ========================
+        // AppRole
+        // ========================
         builder.Entity<AppRole>(entity =>
         {
             entity.ToTable("Roles");
+            entity.Property(e => e.BusinessKey)
+                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+                  .IsRequired();
+
+            entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
+
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
         });
 
+        // ========================
+        // RolePermission
+        // ========================
         builder.Entity<RolePermission>(entity =>
         {
             entity.ToTable("RolePermissions");
+            entity.Property(e => e.BusinessKey)
+                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+                  .IsRequired();
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
         });
 
-        builder.Entity<UserOrganization>(entity =>
+        builder.Entity<UserMembership>(entity =>
         {
-            entity.ToTable("UserOrganizations");
+            entity.ToTable("UserMemberships");
+            entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
         });
 
-        builder.Entity<UserRole>(entity =>
+        builder.Entity<UserRoleAssignment>(entity =>
         {
-            entity.ToTable("UserRoles");
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
+            entity.ToTable("UserRoleAssignments");
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
+
 
         builder.Entity<Organization>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
+            entity.Property(e => e.BusinessKey)
+                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+                  .IsRequired();
+
+            entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
         });
 
-        builder.Entity<UserPersona>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.BusinessKey).HasConversion(v => v.Value, v => BusinessKey.FromGuid(v)).IsRequired();
-            entity.HasOne(e => e.User)
-                .WithMany(u => u.UserPersonas)
-                .HasForeignKey(e => e.UserBusinessKey)
-                .HasPrincipalKey(u => u.BusinessKey);
-
-            entity.HasOne(e => e.Persona)
-                .WithMany()
-                .HasForeignKey(e => e.PersonaBusinessKey)
-                .HasPrincipalKey(p => p.BusinessKey);
-        });
-
-        SeedData.Seed(builder);
+        // SeedData.Seed(builder);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -156,7 +207,6 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
         base.OnConfiguring(optionsBuilder);
         optionsBuilder.AddInterceptors(new AddAuditDataInterceptor());
 
-        // Suppress the pending model changes warning
         optionsBuilder.ConfigureWarnings(warnings =>
             warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
     }

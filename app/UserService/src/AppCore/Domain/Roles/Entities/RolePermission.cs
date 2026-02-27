@@ -1,6 +1,5 @@
 ﻿namespace Insurance.UserService.AppCore.Domain.Roles.Entities;
 
-using Insurance.UserService.AppCore.Domain.Permissions.Entities;
 using OysterFx.AppCore.Domain.Aggregates;
 using OysterFx.AppCore.Domain.ValueObjects;
 
@@ -11,12 +10,14 @@ public sealed class RolePermission : Entity<long>
 
     private RolePermission() { }
 
-    private RolePermission(BusinessKey roleBusinessKey, BusinessKey permissionBusinessKey)
+    internal static RolePermission Create(
+        BusinessKey roleBusinessKey,
+        BusinessKey permissionBusinessKey)
     {
-        RoleBusinessKey = roleBusinessKey;
-        PermissionBusinessKey = permissionBusinessKey;
+        return new RolePermission
+        {
+            RoleBusinessKey = roleBusinessKey,
+            PermissionBusinessKey = permissionBusinessKey
+        };
     }
-
-    public static RolePermission AssignRolePermission(BusinessKey roleBusinessKey, BusinessKey permissionBusinessKey)
-        => new(roleBusinessKey, permissionBusinessKey);
 }

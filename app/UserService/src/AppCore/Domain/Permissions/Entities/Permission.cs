@@ -3,7 +3,7 @@
 using Insurance.UserService.AppCore.Domain.Roles.Enums;
 using OysterFx.AppCore.Domain.Aggregates;
 
-public class Permission : Entity<long>
+public class Permission : AggregateRoot<long>
 {
     public string Code { get; private set; }
     public RoleScope Scope { get; private set; }
@@ -14,12 +14,23 @@ public class Permission : Entity<long>
 
     private Permission(string code, RoleScope scope, string? description = null)
     {
-        Code = code.Trim().ToUpperInvariant(); ;
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Permission code cannot be empty.", nameof(code));
+
+        Code = Normalize(code);
         Scope = scope;
         Description = description;
         IsActive = true;
     }
 
+    public static Permission ForSystem(string code, string? description = null) => new(code, RoleScope.System, description);
+
+    public static Permission ForOrganization(string code, string? description = null) => new(code, RoleScope.Organization, description);
+
+    public static Permission ForApplication(string code, string? description = null) => new(code, RoleScope.Application, description);
+
     public void Deactivate() => IsActive = false;
     public void Activate() => IsActive = true;
+
+    private static string Normalize(string code) => code.Trim().ToUpperInvariant();
 }

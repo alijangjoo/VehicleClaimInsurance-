@@ -1,8 +1,12 @@
-﻿using Insurance.UserService.AppCore.AppServices.AAA.Services;
+﻿using Insurance.CacheService.Infra.CallerService.Models;
+using Insurance.Infra.InternalServices.UserApiCaller.Models;
+using Insurance.PanelPayamakService.Infra.KavehNegarProvider;
+using Insurance.UserService.AppCore.AppServices.AAA.Services;
 using Insurance.UserService.AppCore.Domain.Common;
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
+using Insurance.UserService.AppCore.Shared.OtpCodeContracts.OtpCodes.DomainServices;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +14,8 @@ using Microsoft.EntityFrameworkCore; // Add this using
 using Microsoft.IdentityModel.Tokens;
 using OysterFx.Endpoints.Api.Extensions.DI;
 using OysterFx.Endpoints.Api.ModelBindings;
+using Suspect.TaskPro.AppCore.DomainServices.OtpCodeServices;
+using Suspect.TaskPro.AppCore.Shared.AAA.Services;
 using System.Text;
 using AuthenticationService = Insurance.UserService.AppCore.AppServices.AAA.Services.AuthenticationService;
 using IAuthenticationService = Insurance.UserService.AppCore.Shared.AAA.Services.IAuthenticationService;
@@ -30,6 +36,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // builder.Services.AddOpenApi();
+builder.Services.AddUserServiceCommandPersistenceServices();
+builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
+builder.Services.AddUserServices(builder.Configuration);
+builder.Services.AddKavehNegarPayamk(options =>
+{
+    options.ServicePath = builder.Configuration["PanelPayamak:Providers:KavehNegar:ServicePath"];
+});
 
 builder.Services.AddDbContext<InsuranceUserServiceDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -62,6 +75,8 @@ builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IOtpGeneratorDomainService, OtpGeneratorDomainService>();
+builder.Services.AddCacheServices(builder.Configuration);
 
 // اضافه کردن JwtSettings به تنظیمات
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -116,6 +131,25 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<InsuranceUserServiceDbContext>();
+
+    try
+    {
+        // روش 1: حذف و ایجاد مجدد دیتابیس (سریع‌ترین روش برای توسعه)
+        Console.WriteLine("🔄 Dropping and recreating database...");
+        context.Database.EnsureDeleted();
+        context.Database.Migrate();
+        Console.WriteLine("✅ Database reset and seeded successfully!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error resetting database: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

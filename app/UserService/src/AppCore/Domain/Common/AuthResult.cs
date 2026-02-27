@@ -9,29 +9,34 @@ public class AuthResult
     public string Message { get; set; } = string.Empty;
     public string? Token { get; set; }
     public AppUser? User { get; set; }
-    public IEnumerable<OrganizationPersona>? Personas { get; set; }
+
+    /// <summary>
+    /// عضویت‌های کاربر در سازمان‌ها و نقش‌ها
+    /// </summary>
+    public IEnumerable<UserMembership>? Memberships { get; set; }
+
     public DateTime TokenExpiration { get; set; }
 
-    public static AuthResult Success(string token, AppUser user, IEnumerable<OrganizationPersona> personas)
+    public static AuthResult Success(string token, AppUser user, IEnumerable<UserMembership> memberships)
     {
         return new AuthResult
         {
             IsSuccess = true,
             Token = token,
             User = user,
-            Personas = personas,
+            Memberships = memberships,
             TokenExpiration = DateTime.UtcNow.AddHours(8) // مثلاً 8 ساعت
         };
     }
 
-    public static AuthResult Success(string token, AppUser user, IEnumerable<OrganizationPersona> personas, DateTime expiration)
+    public static AuthResult Success(string token, AppUser user, IEnumerable<UserMembership> memberships, DateTime expiration)
     {
         return new AuthResult
         {
             IsSuccess = true,
             Token = token,
             User = user,
-            Personas = personas,
+            Memberships = memberships,
             TokenExpiration = expiration
         };
     }
