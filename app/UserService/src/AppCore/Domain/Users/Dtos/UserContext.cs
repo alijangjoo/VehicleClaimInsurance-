@@ -1,8 +1,8 @@
 ﻿namespace Insurance.UserService.AppCore.Domain.Users.Dtos;
 
+using Insurance.UserService.AppCore.Domain.Memberships.Entities;
 using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Tenants.Entities;
-using Insurance.UserService.AppCore.Domain.Users.Entities;
 using OysterFx.AppCore.Domain.ValueObjects;
 
 public class UserContext
@@ -17,12 +17,12 @@ public class UserContext
     /// <summary>
     /// عضویت فعلی کاربر در یک سازمان (Tenant) و نقش
     /// </summary>
-    public UserMembership? CurrentMembership { get; set; }
+    public Membership? CurrentMembership { get; set; }
 
     /// <summary>
     /// تمام عضویت‌های کاربر در سازمان‌ها و نقش‌ها
     /// </summary>
-    public List<UserMembership> AvailableMemberships { get; set; } = new();
+    public List<Membership> AvailableMemberships { get; set; } = new();
 
     /// <summary>
     /// مجوزهای فعلی کاربر

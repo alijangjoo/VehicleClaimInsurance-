@@ -2,11 +2,13 @@
 using Insurance.Infra.InternalServices.UserApiCaller.Models;
 using Insurance.PanelPayamakService.Infra.KavehNegarProvider;
 using Insurance.UserService.AppCore.AppServices.AAA.Services;
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Common;
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.AppCore.Shared.OtpCodeContracts.OtpCodes.DomainServices;
+using Insurance.UserService.Endpoints.Api.Extensions.Db;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +16,7 @@ using Microsoft.EntityFrameworkCore; // Add this using
 using Microsoft.IdentityModel.Tokens;
 using OysterFx.Endpoints.Api.Extensions.DI;
 using OysterFx.Endpoints.Api.ModelBindings;
+using OysterFx.Infra.Auth.JwtServices;
 using Suspect.TaskPro.AppCore.DomainServices.OtpCodeServices;
 using Suspect.TaskPro.AppCore.Shared.AAA.Services;
 using System.Text;
@@ -39,6 +42,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddUserServiceCommandPersistenceServices();
 builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
 builder.Services.AddUserServices(builder.Configuration);
+builder.Services.AddJwtUserInfoService();
 builder.Services.AddKavehNegarPayamk(options =>
 {
     options.ServicePath = builder.Configuration["PanelPayamak:Providers:KavehNegar:ServicePath"];
@@ -46,9 +50,11 @@ builder.Services.AddKavehNegarPayamk(options =>
 
 builder.Services.AddDbContext<InsuranceUserServiceDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDatabase(builder.Configuration);
+
 //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<AppUser, AppRole>(options =>
+builder.Services.AddIdentity<Account, AppRole>(options =>
 {
     // تنظیمات Password
     options.Password.RequireDigit = true;

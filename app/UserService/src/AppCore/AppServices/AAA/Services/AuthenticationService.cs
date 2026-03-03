@@ -1,24 +1,23 @@
 ﻿namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
 
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Common;
 using Insurance.UserService.AppCore.Domain.Users.Dtos;
-using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using OysterFx.AppCore.Domain.ValueObjects;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly SignInManager<AppUser> _signInManager;
+    private readonly UserManager<Account> _userManager;
+    private readonly SignInManager<Account> _signInManager;
     private readonly ITokenService _tokenService;
     private readonly InsuranceUserServiceDbContext _context;
 
     public AuthenticationService(
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager,
+        UserManager<Account> userManager,
+        SignInManager<Account> signInManager,
         ITokenService tokenService,
         InsuranceUserServiceDbContext context)
     {

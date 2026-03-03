@@ -1,10 +1,12 @@
 ﻿namespace Insurance.UserService.Infra.Persistence.RDB.Commands;
 
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Common;
+using Insurance.UserService.AppCore.Domain.MembershipRoleAssignments.Entities;
+using Insurance.UserService.AppCore.Domain.Memberships.Entities;
 using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Permissions.Entities;
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
-using Insurance.UserService.AppCore.Domain.Tenants.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.Infra.Persistence.RDB.Commands.Extensions;
 using Insurance.UserService.Infra.Persistence.RDB.Commands.ValueConversions;
@@ -16,26 +18,19 @@ using OysterFx.AppCore.Domain.ValueObjects;
 using OysterFx.Infra.Persistence.RDB.Commands.Interceptors;
 using OysterFx.Infra.Persistence.RDB.Commands.ValueConversions;
 using System.Globalization;
-using System.Reflection.Emit;
 
-public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole, long>
+public class InsuranceUserServiceDbContext : IdentityDbContext<Account, AppRole, long>
 {
     public InsuranceUserServiceDbContext(DbContextOptions<InsuranceUserServiceDbContext> options) : base(options) { }
     public InsuranceUserServiceDbContext() { }
 
-    // ===========================
-    // DbSets
-    // ===========================
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
-    public DbSet<UserMembership> UserMemberships { get; set; }
-    public DbSet<UserRoleAssignment> UserRoleAssignments { get; set; }
+    public DbSet<Membership> Memberships { get; set; }
+    public DbSet<MembershipRoleAssignment> MembershipRoleAssignments { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-    // ===========================
-    // Shadow Property Helpers
-    // ===========================
     public T? GetShadowPropertyValue<T>(object entity, string propertyName) where T : IConvertible
     {
         var value = Entry(entity).Property(propertyName).CurrentValue;
@@ -85,9 +80,6 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
         }
     }
 
-    // ===========================
-    // Role Indexes (Tenant-Aware)
-    // ===========================
     private void ConfigureRoleIndexes(ModelBuilder builder)
     {
         var role = builder.Entity<AppRole>();
@@ -111,9 +103,6 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             index.HasFilter("[NormalizedName] IS NOT NULL");
     }
 
-    // ===========================
-    // OnModelCreating
-    // ===========================
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -122,9 +111,16 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
 
         builder.AddAuditableShadowProperties();
 
-        // ========================
-        // RefreshToken
-        // ========================
+        builder.Entity<Organization>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BusinessKey)
+                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+                  .IsRequired();
+
+            entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
+        });
+
         builder.Entity<RefreshToken>(entity =>
         {
             entity.HasKey(e => e.Token);
@@ -136,10 +132,7 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             entity.Property(e => e.ReplacedByToken).HasMaxLength(500);
         });
 
-        // ========================
-        // AppUser
-        // ========================
-        builder.Entity<AppUser>(entity =>
+        builder.Entity<User>(entity =>
         {
             entity.ToTable("Users");
             entity.Property(e => e.BusinessKey)
@@ -148,9 +141,6 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
-        // ========================
-        // AppRole
-        // ========================
         builder.Entity<AppRole>(entity =>
         {
             entity.ToTable("Roles");
@@ -163,9 +153,6 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
-        // ========================
-        // RolePermission
-        // ========================
         builder.Entity<RolePermission>(entity =>
         {
             entity.ToTable("RolePermissions");
@@ -175,29 +162,21 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<AppUser, AppRole,
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
-        builder.Entity<UserMembership>(entity =>
+        builder.Entity<Membership>(entity =>
         {
-            entity.ToTable("UserMemberships");
+            entity.ToTable("Memberships");
             entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
-        builder.Entity<UserRoleAssignment>(entity =>
+        builder.Entity<MembershipRoleAssignment>(entity =>
         {
             entity.ToTable("UserRoleAssignments");
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
         });
 
 
-        builder.Entity<Organization>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.BusinessKey)
-                  .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
-                  .IsRequired();
 
-            entity.Property(e => e.TenantId).HasConversion(new TenantIdConversion());
-        });
 
         // SeedData.Seed(builder);
     }

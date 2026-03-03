@@ -1,6 +1,9 @@
-﻿using Insurance.UserService.AppCore.Domain.Common;
-using Insurance.UserService.AppCore.Domain.Organizations.Entities;
+﻿namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
+
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
+using Insurance.UserService.AppCore.Domain.Common;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
+using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +15,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
-namespace Insurance.UserService.AppCore.AppServices.AAA.Services;
 
 public class JwtTokenService : ITokenService
 {
@@ -31,17 +32,16 @@ public class JwtTokenService : ITokenService
         _logger = logger;
     }
 
-    public async Task<TokenResult> GenerateTokenAsync(AppUser user, IEnumerable<UserMembership> memberships)
+    public async Task<TokenResult> GenerateTokenAsync(Account user, IEnumerable<MembershipDto> memberships)
     {
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new Claim(JwtRegisteredClaimNames.Name, user.FullName ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.Id.ToString()),
             new Claim("username", user.UserName ?? ""),
-            new Claim("businessKey", user.BusinessKey.Value.ToString())
+            new Claim("businessKey", user.UserBusinessKey.Value.ToString())
         };
 
         // اضافه کردن Membershipها به claims
@@ -99,7 +99,7 @@ public class JwtTokenService : ITokenService
         };
     }
 
-    public async Task<TokenResult> GenerateTokenWithMembershipAsync(AppUser user, BusinessKey membershipKey)
+    public async Task<TokenResult> GenerateTokenWithMembershipAsync(Account user, BusinessKey membershipKey)
     {
         //var membership = await _context.UserMemberships
         //    .Include(m => m.Organization)

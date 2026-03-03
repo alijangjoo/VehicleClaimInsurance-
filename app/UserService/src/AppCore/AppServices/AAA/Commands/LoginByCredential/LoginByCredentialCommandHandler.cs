@@ -2,6 +2,8 @@
 
 using Insurance.CacheService.Infra.CallerService.Abstractions;
 using Insurance.CacheService.Infra.CallerService.Models.Dtos.SetToCache;
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
+using Insurance.UserService.AppCore.Domain.Memberships.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
@@ -14,15 +16,15 @@ using System.Threading.Tasks;
 
 public class LoginByCredentialCommandHandler : CommandHandler<LoginByCredentialCommand, LoginByCredentialCommandResult?>
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly SignInManager<AppUser> _signInManager;
+    private readonly UserManager<Account> _userManager;
+    private readonly SignInManager<Account> _signInManager;
     private readonly ITokenService _tokenService;
     private readonly ICacheServiceCaller _cacheServiceCaller;
     private readonly InsuranceUserServiceDbContext _dbContext;
 
     public LoginByCredentialCommandHandler(
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager,
+        UserManager<Account> userManager,
+        SignInManager<Account> signInManager,
         ITokenService tokenService,
         ICacheServiceCaller cacheServiceCaller,
         InsuranceUserServiceDbContext dbContext)
@@ -39,56 +41,48 @@ public class LoginByCredentialCommandHandler : CommandHandler<LoginByCredentialC
         if (string.IsNullOrEmpty(command.UserName) || string.IsNullOrEmpty(command.Password))
             return CommandResult<LoginByCredentialCommandResult?>.Failure("نام کاربری یا رمز عبور وارد نشده است");
 
-        // پیدا کردن کاربر
         var user = await _userManager.FindByNameAsync(command.UserName);
         if (user == null)
             return CommandResult<LoginByCredentialCommandResult?>.Failure("کاربر یافت نشد");
 
-        // بررسی پسورد
         var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
         if (!passwordCheck.Succeeded)
             return CommandResult<LoginByCredentialCommandResult?>.Failure("نام کاربری یا رمز عبور اشتباه است");
 
-        // گرفتن عضویت‌ها (Memberships) کاربر
-        var memberships = await _dbContext.UserMemberships
-            .Include(m => m.RoleAssignments) // RoleAssignments مربوط به هر Membership
-            .Where(m => m.UserBusinessKey == user.BusinessKey && m.IsActive)
-            .ToListAsync();
+        var memberships = await _dbContext.Memberships
+            .Where(m => m.UserBusinessKey == user.UserBusinessKey && m.IsActive)
+            .Join(_dbContext.MembershipRoleAssignments, m => m.BusinessKey, mra => mra.MembershipBusinessKey, (m, ra) => new MembershipDto
+            {
+                BusinessKey = m.BusinessKey.Value,
+                OrganizationBusinessKey = m.OrganizationBusinessKey.Value,
+                RoleBusinessKey = ra.RoleBusinessKey.Value
+            }).ToListAsync();
 
-        // استخراج RoleBusinessKeys و سپس Permission Codes
-        var allPermissionCodes = new List<string>();
-        var membershipDtos = new List<UserMembership>();
-
-        foreach (var membership in memberships)
+        var membershipDtos = memberships.ToList();
+        var membershipKeys = memberships.Select(c => c.BusinessKey).ToList();
+        if (!membershipKeys.Any())
         {
-            membershipDtos.Add(membership); // برای خروجی
-
-            // گرفتن RoleBusinessKey ها
-            var roleKeys = membership.RoleAssignments.Select(ra => ra.RoleBusinessKey).ToList();
-
-            if (!roleKeys.Any())
-                continue;
-
-            // گرفتن PermissionCodeها از RolePermission
-            var permissionCodes = await _dbContext.RolePermissions
-                .Where(rp => roleKeys.Contains(rp.RoleBusinessKey))
-                .Join(_dbContext.Permissions,
-                      rp => rp.PermissionBusinessKey,
-                      p => p.BusinessKey,
-                      (rp, p) => p.Code)
-                .ToListAsync();
-
-            allPermissionCodes.AddRange(permissionCodes);
+            return await FailAsync("کاربر در هیچ سازمان فعالی عضویت ندارد");
         }
 
-        allPermissionCodes = allPermissionCodes.Distinct().ToList();
+        var roleKeys = await _dbContext.MembershipRoleAssignments
+            .Where(ra => membershipKeys.Contains(ra.MembershipBusinessKey.Value))
+            .Select(ra => ra.RoleBusinessKey)
+            .Distinct()
+            .ToListAsync();
+
+        var allPermissionCodes = await _dbContext.RolePermissions
+            .Where(rp => roleKeys.Contains(rp.RoleBusinessKey))
+            .Join(_dbContext.Permissions, rp => rp.PermissionBusinessKey, p => p.BusinessKey, (rp, p) => p.Code)
+            .Distinct()
+            .ToListAsync();
 
         // تولید توکن JWT
         var tokenResult = await _tokenService.GenerateTokenAsync(user, membershipDtos);
 
         // ذخیره Permissionها در کش
         await _cacheServiceCaller.SetAsync(new SetToCacheRequest(
-            Key: $"user--permissions--{user.BusinessKey.Value}",
+            Key: $"user--permissions--{user.UserBusinessKey.Value}",
             Value: string.Join(',', allPermissionCodes),
             AbsoluteExpirationMinutes: 60 // معادل زمان انقضا 60 دقیقه
         ));

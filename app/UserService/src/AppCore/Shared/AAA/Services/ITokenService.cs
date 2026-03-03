@@ -1,8 +1,8 @@
 ﻿namespace Insurance.UserService.AppCore.Shared.AAA.Services;
 
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Common;
-using Insurance.UserService.AppCore.Domain.Organizations.Entities;
-using Insurance.UserService.AppCore.Domain.Users.Entities;
+using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using OysterFx.AppCore.Domain.ValueObjects;
 using System.Security.Claims;
 
@@ -11,12 +11,12 @@ public interface ITokenService
     /// <summary>
     /// ایجاد توکن برای کاربر با تمام سازمان‌ها و نقش‌هایش (UserMemberships)
     /// </summary>
-    Task<TokenResult> GenerateTokenAsync(AppUser user, IEnumerable<UserMembership> memberships);
+    Task<TokenResult> GenerateTokenAsync(Account user, IEnumerable<MembershipDto> memberships);
 
     /// <summary>
     /// ایجاد توکن برای کاربر با یک سازمان و نقش مشخص (MembershipKey)
     /// </summary>
-    Task<TokenResult> GenerateTokenWithMembershipAsync(AppUser user, BusinessKey membershipKey);
+    Task<TokenResult> GenerateTokenWithMembershipAsync(Account user, BusinessKey membershipKey);
 
     /// <summary>
     /// نوسازی توکن با توکن دسترسی و RefreshToken

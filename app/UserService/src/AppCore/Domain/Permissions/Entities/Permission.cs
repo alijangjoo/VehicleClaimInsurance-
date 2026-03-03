@@ -3,7 +3,7 @@
 using Insurance.UserService.AppCore.Domain.Roles.Enums;
 using OysterFx.AppCore.Domain.Aggregates;
 
-public class Permission : AggregateRoot<long>
+public class Permission : AggregateRoot
 {
     public string Code { get; private set; }
     public RoleScope Scope { get; private set; }

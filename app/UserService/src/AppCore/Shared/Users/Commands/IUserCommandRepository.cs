@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 public interface IUserCommandRepository
 {
-    AppUser Get(BusinessKey BusinessKey);
-    Task<AppUser> GetAsync(BusinessKey BusinessKey);
-    Task InsertAsync(AppUser entity);
+    User Get(BusinessKey BusinessKey);
+    User GetByMobileNumber(string mobileNumber);
+    Task<User> GetAsync(BusinessKey BusinessKey);
+    Task InsertAsync(User entity);
     Task<int> CommitAsync();
 }

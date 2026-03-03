@@ -24,13 +24,13 @@ public class AssignRoleToMembershipCommandHandler : CommandHandler<AssignRoleToM
         if (user is null)
             return CommandResult.Failure("User not found");
 
-        var membership = user.Memberships.FirstOrDefault(x => x.BusinessKey == BusinessKey.FromGuid(command.MembershipBusinessKey));
+        //var membership = user.Memberships.FirstOrDefault(x => x.BusinessKey == BusinessKey.FromGuid(command.MembershipBusinessKey));
 
-        if (membership is null)
-            return CommandResult.Failure("Membership not found");
+        //if (membership is null)
+        //    return CommandResult.Failure("Membership not found");
 
-        membership.AssignRole(
-            BusinessKey.FromGuid(command.RoleBusinessKey));
+        //membership.AssignRole(
+        //    BusinessKey.FromGuid(command.RoleBusinessKey));
 
         await _userCommandRepository.CommitAsync();
 

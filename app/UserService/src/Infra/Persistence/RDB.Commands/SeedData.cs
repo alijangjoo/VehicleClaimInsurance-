@@ -1,5 +1,6 @@
 ﻿namespace Insurance.UserService.Infra.Persistence.RDB.Commands;
 
+using Insurance.UserService.AppCore.Domain.Memberships.Entities;
 using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Permissions.Entities;
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
@@ -240,7 +241,7 @@ public static class SeedData
         }
     };
 
-        modelBuilder.Entity<AppUser>().HasData(users);
+        modelBuilder.Entity<User>().HasData(users);
     }
 
     private static void SeedUserMemberships(ModelBuilder modelBuilder)
@@ -252,7 +253,7 @@ public static class SeedData
             new { Id = 3L, BusinessKey = BusinessKey.FromGuid(Guid.NewGuid()), UserBusinessKey = BusinessKey.FromGuid(User3BusinessKey), OrganizationBusinessKey = BusinessKey.FromGuid(SystemOrgBusinessKey), RoleBusinessKey = BusinessKey.FromGuid(Role3BusinessKey), AssignmentType = AssignmentType.Direct, StartDate = FixedDate, IsActive = true }
         };
 
-        modelBuilder.Entity<UserMembership>().HasData(userMemberships);
+        modelBuilder.Entity<Membership>().HasData(userMemberships);
     }
 
     private static void SeedRolePermissions(ModelBuilder modelBuilder)

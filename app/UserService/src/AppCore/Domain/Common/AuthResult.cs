@@ -1,5 +1,6 @@
 ﻿namespace Insurance.UserService.AppCore.Domain.Common;
 
+using Insurance.UserService.AppCore.Domain.Memberships.Entities;
 using Insurance.UserService.AppCore.Domain.Organizations.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 
@@ -8,16 +9,16 @@ public class AuthResult
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
     public string? Token { get; set; }
-    public AppUser? User { get; set; }
+    public User? User { get; set; }
 
     /// <summary>
     /// عضویت‌های کاربر در سازمان‌ها و نقش‌ها
     /// </summary>
-    public IEnumerable<UserMembership>? Memberships { get; set; }
+    public IEnumerable<Membership>? Memberships { get; set; }
 
     public DateTime TokenExpiration { get; set; }
 
-    public static AuthResult Success(string token, AppUser user, IEnumerable<UserMembership> memberships)
+    public static AuthResult Success(string token, User user, IEnumerable<Membership> memberships)
     {
         return new AuthResult
         {
@@ -29,7 +30,7 @@ public class AuthResult
         };
     }
 
-    public static AuthResult Success(string token, AppUser user, IEnumerable<UserMembership> memberships, DateTime expiration)
+    public static AuthResult Success(string token, User user, IEnumerable<Membership> memberships, DateTime expiration)
     {
         return new AuthResult
         {

@@ -27,10 +27,10 @@ public class AddMembershipCommandHandler : CommandHandler<AddMembershipCommand, 
         if (user is null)
             return CommandResult.Failure("User not found");
 
-        user.AddMembership(
-            _userContextService.GetCurrentUserContextAsync().Result!.TenantId,
-            BusinessKey.FromGuid(command.OrganizationBusinessKey),
-            DateTime.UtcNow);
+        //user.AddMembership(
+        //    _userContextService.GetCurrentUserContextAsync().Result!.TenantId,
+        //    BusinessKey.FromGuid(command.OrganizationBusinessKey),
+        //    DateTime.UtcNow);
 
         await _userRepository.CommitAsync();
 

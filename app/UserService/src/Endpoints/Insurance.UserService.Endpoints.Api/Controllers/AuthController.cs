@@ -1,8 +1,11 @@
 namespace Insurance.UserService.Endpoints.Api.Controllers;
 
+using Azure.Core;
+using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByOtp;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.VerifyLoginOtp;
+using Insurance.UserService.AppCore.Shared.Users.Commands;
 using Insurance.UserService.Endpoints.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,40 +16,45 @@ using OysterFx.Endpoints.Api.Controllers;
 [Route("api/UserService/[controller]")]
 public class AuthController : OysterFxController
 {
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<Account> _userManager;
+    private readonly IUserCommandRepository _userCommandRepository;
 
-    public AuthController(UserManager<AppUser> userManager)
+    public AuthController(UserManager<Account> userManager, IUserCommandRepository userCommandRepository)
     {
         _userManager = userManager;
+        _userCommandRepository = userCommandRepository;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var existing = await _userManager.Users.FirstOrDefaultAsync(u => u.MobileNumber == request.MobileNumber);
+        var existing = _userCommandRepository.GetByMobileNumber(request.MobileNumber);
+        // var existing = await _userManager.Users.FirstOrDefaultAsync(u => u.MobileNumber == request.MobileNumber);
 
-        if (existing != null)
+        if (existing is not null)
             return BadRequest("Mobile number already exists.");
 
-        var user = AppUser.NewUser(request.MobileNumber, request.MobileNumber);
+        var account = Account.Create(existing.BusinessKey, request.MobileNumber);
 
-        var result = await _userManager.CreateAsync(user);
+        var result = await _userManager.CreateAsync(account);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        return Ok(new UserIdResponse(user.Id.ToString()));
+        return Ok(new UserIdResponse(account.Id.ToString()));
     }
 
     [HttpGet("by-mobile/{mobileNumber}")]
     public async Task<IActionResult> GetUserIdByMobile(string mobileNumber)
     {
-        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.MobileNumber == mobileNumber);
+        var existing = _userCommandRepository.GetByMobileNumber(mobileNumber);
+        if (existing is not null)
+            return BadRequest("Mobile number already exists.");
 
-        if (user == null)
+        if (existing is null)
             return NotFound("User not found.");
 
-        return Ok(new UserIdResponse(user.Id.ToString()));
+        return Ok(new UserIdResponse(existing.Id.ToString()));
     }
 
     [HttpPost("login/otp")]

@@ -2,6 +2,7 @@
 
 using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Roles.Enums;
+using Insurance.UserService.AppCore.Domain.Tenants.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.AppCore.Shared.Roles.Commands;
 using Insurance.UserService.AppCore.Shared.Roles.Commands.CreateRole;
@@ -27,7 +28,8 @@ public class CreateRoleCommandHandler : CommandHandler<CreateRoleCommand, Guid>
         CreateRoleCommand command)
     {
         // TODO: Must remove .Result
-        var tenantId = _userContextService.GetCurrentUserContextAsync().Result!.TenantId;
+        // var tenantId = _userContextService.GetCurrentUserContextAsync().Result!.TenantId;
+        var tenantId = TenantId.FromString("TENANT_ee3a6e476c5c4fdeb3deba60c8460309") ;
 
         AppRole role = command.Scope switch
         {
