@@ -3,6 +3,7 @@ namespace Insurance.UserService.Endpoints.Api.Controllers;
 using Azure.Core;
 using Insurance.UserService.AppCore.Domain.Accounts.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
+using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByOtp;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.VerifyLoginOtp;
 using Insurance.UserService.AppCore.Shared.Users.Commands;
@@ -60,6 +61,11 @@ public class AuthController : OysterFxController
     [HttpPost("login/otp")]
     public async Task<IActionResult> LoginByOtp([FromBody] LoginByOtpCommand request)
        => await SendCommand<LoginByOtpCommand, LoginByOtpCommandResult?>(LoginByOtpCommand.CreateInstance(request.MobileNumber));
+
+    [HttpPost("login/by-credential")]
+    public async Task<IActionResult> LoginByCredential([FromBody] LoginByCredentialCommand request) 
+        => await SendCommand<LoginByCredentialCommand, LoginByCredentialCommandResult?>(request);
+
 
     [HttpPost("login/otp/{mobileNumber}/verify")]
     public async Task<IActionResult> VerifyOtpLogin([FromRoute] string mobileNumber, [FromBody] string? code)

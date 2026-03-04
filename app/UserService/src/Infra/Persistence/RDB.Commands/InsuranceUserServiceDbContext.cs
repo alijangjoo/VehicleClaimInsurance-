@@ -24,6 +24,7 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<Account, AppRole,
     public InsuranceUserServiceDbContext(DbContextOptions<InsuranceUserServiceDbContext> options) : base(options) { }
     public InsuranceUserServiceDbContext() { }
 
+    public DbSet<User> Users { get; set; }
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }

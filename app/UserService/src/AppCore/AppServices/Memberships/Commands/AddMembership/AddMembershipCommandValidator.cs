@@ -1,4 +1,4 @@
-﻿namespace Insurance.UserService.AppCore.AppServices.Users.Commands.AddMembership;
+﻿namespace Insurance.UserService.AppCore.AppServices.Memberships.Commands.AddMembership;
 
 using FluentValidation;
 using Insurance.UserService.AppCore.Shared.Users.Commands.AddMembership;

@@ -5,7 +5,6 @@ using System;
 
 public class AssignRoleToMembershipCommand : ICommand<bool>
 {
-    public Guid UserBusinessKey { get; set; }
     public Guid MembershipBusinessKey { get; set; }
     public Guid RoleBusinessKey { get; set; }
 }

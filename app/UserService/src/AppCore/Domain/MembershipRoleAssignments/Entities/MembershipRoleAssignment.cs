@@ -10,14 +10,12 @@ public sealed class MembershipRoleAssignment : AggregateRoot
 
     private MembershipRoleAssignment() { }
 
-    internal static MembershipRoleAssignment Create(
-        BusinessKey membershipBusinessKey,
-        BusinessKey roleBusinessKey)
+    private MembershipRoleAssignment(BusinessKey membershipBusinessKey, BusinessKey roleBusinessKey)
     {
-        return new MembershipRoleAssignment
-        {
-            MembershipBusinessKey = membershipBusinessKey,
-            RoleBusinessKey = roleBusinessKey
-        };
+        MembershipBusinessKey = membershipBusinessKey;
+        RoleBusinessKey = roleBusinessKey;
     }
+
+    public static MembershipRoleAssignment Create(BusinessKey membershipBusinessKey, BusinessKey roleBusinessKey)
+        => new MembershipRoleAssignment(membershipBusinessKey, roleBusinessKey);
 }

@@ -68,7 +68,7 @@ builder.Services.AddIdentity<Account, AppRole>(options =>
     options.Lockout.MaxFailedAccessAttempts = 5;
 
     // تنظیمات User
-    options.User.RequireUniqueEmail = true;
+    options.User.RequireUniqueEmail = false;
 
     // تنظیمات SignIn
     options.SignIn.RequireConfirmedEmail = false;

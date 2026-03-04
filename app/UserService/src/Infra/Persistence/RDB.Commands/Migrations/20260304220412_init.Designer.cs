@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
 {
     [DbContext(typeof(InsuranceUserServiceDbContext))]
-    [Migration("20260303092433_init")]
+    [Migration("20260304220412_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -24,6 +24,76 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Accounts.Entities.Account", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("UserBusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
 
             modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Common.RefreshToken", b =>
                 {
@@ -58,6 +128,88 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.MembershipRoleAssignments.Entities.MembershipRoleAssignment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("BusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MembershipBusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ModifiedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("ModifiedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RoleBusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserRoleAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Memberships.Entities.Membership", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("BusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("ModifiedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrganizationBusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserBusinessKey")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Memberships", (string)null);
                 });
 
             modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Organizations.Entities.Organization", b =>
@@ -224,16 +376,13 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                     b.ToTable("RolePermissions", (string)null);
                 });
 
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", b =>
+            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.User", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("BusinessKey")
                         .HasColumnType("uuid");
@@ -244,28 +393,18 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("text");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
+                    b.Property<string>("CreatedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FullName")
                         .HasColumnType("text");
-
-                    b.Property<string>("GPSDeviceId")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("MaxAllowedDailyCaseReferral")
                         .HasColumnType("numeric");
@@ -279,25 +418,12 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                     b.Property<string>("MobileNumber")
                         .HasColumnType("text");
 
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                    b.Property<string>("ModifiedByUserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<DateTime?>("PasswordExpirationDate")
+                    b.Property<DateTime?>("ModifiedDateTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("ProfileImageBase64")
                         .HasColumnType("text");
@@ -305,124 +431,9 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                     b.Property<string>("Province")
                         .HasColumnType("text");
 
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("UserExpirationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.UserMembership", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long?>("AppUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("BusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("CreatedDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ModifiedByUserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("ModifiedDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("OrganizationBusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TenantId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserBusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
-
-                    b.ToTable("UserMemberships", (string)null);
-                });
-
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.UserRoleAssignment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<Guid>("BusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("CreatedDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ModifiedByUserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("ModifiedDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("RoleBusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserMembershipBusinessKey")
-                        .HasColumnType("uuid");
-
-                    b.Property<long?>("UserMembershipId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserMembershipId");
-
-                    b.ToTable("UserRoleAssignments", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
@@ -535,20 +546,6 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                         .HasForeignKey("AppRoleId");
                 });
 
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.UserMembership", b =>
-                {
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", null)
-                        .WithMany("Memberships")
-                        .HasForeignKey("AppUserId");
-                });
-
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.UserRoleAssignment", b =>
-                {
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.UserMembership", null)
-                        .WithMany("RoleAssignments")
-                        .HasForeignKey("UserMembershipId");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
                 {
                     b.HasOne("Insurance.UserService.AppCore.Domain.Roles.Entities.AppRole", null)
@@ -560,7 +557,7 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<long>", b =>
                 {
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", null)
+                    b.HasOne("Insurance.UserService.AppCore.Domain.Accounts.Entities.Account", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -569,7 +566,7 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
                 {
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", null)
+                    b.HasOne("Insurance.UserService.AppCore.Domain.Accounts.Entities.Account", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -584,7 +581,7 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", null)
+                    b.HasOne("Insurance.UserService.AppCore.Domain.Accounts.Entities.Account", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -593,7 +590,7 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<long>", b =>
                 {
-                    b.HasOne("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", null)
+                    b.HasOne("Insurance.UserService.AppCore.Domain.Accounts.Entities.Account", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -603,16 +600,6 @@ namespace Insurance.UserService.Infra.Persistence.RDB.Commands.Migrations
             modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Roles.Entities.AppRole", b =>
                 {
                     b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.AppUser", b =>
-                {
-                    b.Navigation("Memberships");
-                });
-
-            modelBuilder.Entity("Insurance.UserService.AppCore.Domain.Users.Entities.UserMembership", b =>
-                {
-                    b.Navigation("RoleAssignments");
                 });
 #pragma warning restore 612, 618
         }

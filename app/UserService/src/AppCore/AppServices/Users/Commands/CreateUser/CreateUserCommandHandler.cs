@@ -32,8 +32,7 @@ public class CreateUserCommandHandler : CommandHandler<CreateUserCommand, Guid>
         _organizationCommandRepository = organizationCommandRepository;
     }
 
-    public override async Task<CommandResult<Guid>> Handle(
-        CreateUserCommand command)
+    public override async Task<CommandResult<Guid>> Handle(CreateUserCommand command)
     {
         var user = User.NewUser(command.MobileNumber!);
         await _userCommandRepository.InsertAsync(user);

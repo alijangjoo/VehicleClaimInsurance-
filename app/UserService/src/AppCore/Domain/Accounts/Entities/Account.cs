@@ -11,8 +11,9 @@ public class Account : IdentityUser<long>
     {
         UserBusinessKey = userBusinessKey;
         UserName = userName;
+        Email = $"{userName}@placeholder.local";
     }
 
-    public static Account Create(BusinessKey userBusinessKey, string userName) 
+    public static Account Create(BusinessKey userBusinessKey, string userName)
         => new(userBusinessKey, userName);
 }
