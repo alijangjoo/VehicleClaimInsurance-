@@ -1,21 +1,21 @@
-﻿using Elastic.Apm.Api;
-using Elastic.Apm.AspNetCore;
+﻿using Elastic.Apm.NetCoreAll;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
-using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var config = builder.Configuration;
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo  // This will now work
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "API Gateway",
         Version = "v1",
@@ -46,14 +46,9 @@ builder.Services.AddSwaggerGen(c =>
             new List<string>()
         }
     });
-
-    // Optional: Add XML comments if you have them
-    // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    // c.IncludeXmlComments(xmlPath);
 });
 
-builder.Services.AddElasticApmForAspNetCore();
+builder.Services.AddAllElasticApm();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -77,13 +72,10 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser());
 });
 
-var apiKeys = builder.Configuration.GetSection("ApiKeys");
-
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(transformBuilderContext =>
     {
-        // Correct way to access route ID
         var routeId = transformBuilderContext.Route.RouteId;
         var apiKeys = builder.Configuration.GetSection("ApiKeys");
         var apiKey = apiKeys[routeId];
@@ -111,7 +103,14 @@ builder.Services.AddReverseProxy()
     });
 
 builder.Services.AddHealthChecks();
+
 var app = builder.Build();
+
+
+app.MapGet("/test-apm", async (context) =>
+{
+    await context.Response.WriteAsync("APM Test");
+});
 
 Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 Activity.ForceDefaultIdFormat = true;
@@ -123,18 +122,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gateway v1");
-        c.RoutePrefix = "swagger"; // Serves at https://localhost:5001/swagger
+        c.RoutePrefix = "swagger";
     });
 }
 
-app.UseElasticApm();
+app.UseAllElasticApm(builder.Configuration);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
-
 app.MapReverseProxy();
-
 app.MapGet("/", () => "Yarp API Gateway with Elastic APM + Tracing");
+
 app.Run();

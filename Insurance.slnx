@@ -68,6 +68,9 @@
     <Project Path="app/UserService/src/Infra/Persistence/RDB.Commands/Insurance.UserService.Infra.Persistence.RDB.Commands.csproj" />
     <Project Path="app/UserService/src/Infra/Persistence/RDB.Queries/Insurance.UserService.Infra.Persistence.RDB.Queries.csproj" />
   </Folder>
+  <Folder Name="/app/WebApp/">
+    <Project Path="app/WebApp/src/Insurance.WebApp.Panel/Insurance.WebApp.Panel.csproj" Id="cb4ddfd2-af4b-4ca0-808e-54c3c307d9a6" />
+  </Folder>
   <Folder Name="/fx/" />
   <Folder Name="/fx/src/" />
   <Folder Name="/fx/src/AppCore/">
