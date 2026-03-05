@@ -174,6 +174,20 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<Account, AppRole,
         {
             entity.ToTable("UserRoleAssignments");
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity
+            .Property(e => e.BusinessKey)
+            .HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+            .IsRequired();
+
+            entity
+.Property(e => e.RoleBusinessKey)
+.HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+.IsRequired();
+
+            entity
+.Property(e => e.MembershipBusinessKey)
+.HasConversion(v => v.Value, v => BusinessKey.FromGuid(v))
+.IsRequired();
         });
 
 

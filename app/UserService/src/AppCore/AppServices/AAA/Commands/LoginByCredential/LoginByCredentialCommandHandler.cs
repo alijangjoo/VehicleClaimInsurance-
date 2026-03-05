@@ -65,8 +65,10 @@ public class LoginByCredentialCommandHandler : CommandHandler<LoginByCredentialC
             return await FailAsync("کاربر در هیچ سازمان فعالی عضویت ندارد");
         }
 
+        var membershipGuidKeys = membershipKeys.Select(mk => mk.Value).ToList();
+
         var roleKeys = await _dbContext.MembershipRoleAssignments
-            .Where(ra => membershipKeys.Contains(ra.MembershipBusinessKey.Value))
+            .Where(ra => membershipKeys.Contains(ra.MembershipBusinessKey))  // Direct BusinessKey comparison
             .Select(ra => ra.RoleBusinessKey)
             .Distinct()
             .ToListAsync();

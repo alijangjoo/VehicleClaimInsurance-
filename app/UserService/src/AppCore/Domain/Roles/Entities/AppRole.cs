@@ -27,6 +27,7 @@ public sealed class AppRole : IdentityRole<long>
         Scope = scope;
         TenantId = tenantId;
         BusinessKey = BusinessKey.FromGuid(Guid.NewGuid());
+        NormalizedName = Name.ToUpperInvariant();
     }
 
     public static AppRole ForSystem(string name, TenantId tenantId)
