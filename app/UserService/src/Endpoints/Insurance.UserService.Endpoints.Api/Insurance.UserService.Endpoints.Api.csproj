@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\AppCore\DomainServices\Insurance.UserService.AppCore.DomainServices.csproj" />
     <ProjectReference Include="..\..\AppCore\Shared\Insurance.UserService.AppCore.Shared.csproj" />
     <ProjectReference Include="..\..\Infra\Persistence\RDB.Commands\Insurance.UserService.Infra.Persistence.RDB.Commands.csproj" />
+    <ProjectReference Include="..\..\Infra\Persistence\RDB.Queries\Insurance.UserService.Infra.Persistence.RDB.Queries.csproj" />
   </ItemGroup>
 
 </Project>

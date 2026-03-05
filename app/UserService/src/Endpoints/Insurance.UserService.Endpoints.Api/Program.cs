@@ -8,7 +8,10 @@ using Insurance.UserService.AppCore.Domain.Roles.Entities;
 using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Services;
 using Insurance.UserService.AppCore.Shared.OtpCodeContracts.OtpCodes.DomainServices;
+using Insurance.UserService.Endpoints.Api.Extensions;
 using Insurance.UserService.Endpoints.Api.Extensions.Db;
+using Insurance.UserService.Endpoints.Api.Extensions.Swaggers.Extentions;
+using Insurance.UserService.Endpoints.Api.Middlewares;
 using Insurance.UserService.Infra.Persistence.RDB.Commands;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -28,15 +31,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOysterFxApiCore("OysterFx", "Insurance", "Insurance.UserService");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddNonValidatingValidator();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new()
-    {
-        Title = "User Service API",
-        Version = "v1",
-        Description = "mobile-based user registration service"
-    });
-});
+builder.Services.AddSwaggerDocumentation("Insurance User Service API", "v1");
 
 // builder.Services.AddOpenApi();
 builder.Services.AddUserServiceCommandPersistenceServices();
@@ -135,8 +130,11 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+builder.Services.AddRateLimitServices(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseMiddleware<ApiKeyMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -160,9 +158,7 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerMiddleware("Insurance UserService API v1");
 }
 
 app.UseHttpsRedirection();

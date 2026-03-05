@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <!-- Yarp Reverse Proxy -->
     <PackageReference Include="Yarp.ReverseProxy" Version="2.1.0" />
 
@@ -23,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Extensions\Swagger\" />
     <Folder Include="Middlewares\" />
   </ItemGroup>
 </Project>

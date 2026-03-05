@@ -1,18 +1,17 @@
 namespace Insurance.UserService.Endpoints.Api.Controllers;
 
-using Azure.Core;
 using Insurance.UserService.AppCore.Domain.Accounts.Entities;
-using Insurance.UserService.AppCore.Domain.Users.Entities;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByCredential;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.LoginByOtp;
 using Insurance.UserService.AppCore.Shared.AAA.Commands.VerifyLoginOtp;
 using Insurance.UserService.AppCore.Shared.Users.Commands;
 using Insurance.UserService.Endpoints.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OysterFx.Endpoints.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/UserService/[controller]")]
 public class AuthController : OysterFxController
@@ -58,15 +57,17 @@ public class AuthController : OysterFxController
         return Ok(new UserIdResponse(existing.Id.ToString()));
     }
 
+    [AllowAnonymous]
     [HttpPost("login/otp")]
     public async Task<IActionResult> LoginByOtp([FromBody] LoginByOtpCommand request)
        => await SendCommand<LoginByOtpCommand, LoginByOtpCommandResult?>(LoginByOtpCommand.CreateInstance(request.MobileNumber));
 
+    [AllowAnonymous]
     [HttpPost("login/by-credential")]
-    public async Task<IActionResult> LoginByCredential([FromBody] LoginByCredentialCommand request) 
+    public async Task<IActionResult> LoginByCredential([FromBody] LoginByCredentialCommand request)
         => await SendCommand<LoginByCredentialCommand, LoginByCredentialCommandResult?>(request);
 
-
+    [AllowAnonymous]
     [HttpPost("login/otp/{mobileNumber}/verify")]
     public async Task<IActionResult> VerifyOtpLogin([FromRoute] string mobileNumber, [FromBody] string? code)
         => await SendCommand<VerifyLoginOtpCommand, VerifyLoginOtpCommandResult?>(VerifyLoginOtpCommand.CreateInstance(mobileNumber, code));

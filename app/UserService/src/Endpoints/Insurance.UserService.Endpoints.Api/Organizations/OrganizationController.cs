@@ -1,18 +1,22 @@
 ﻿namespace Insurance.UserService.Endpoints.Api.Organizations;
 
 using Insurance.UserService.AppCore.Shared.Organizations.Commands.Create;
+using Insurance.UserService.AppCore.Shared.Organizations.Queries.GetAll;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OysterFx.Endpoints.Api.Controllers;
 
-// [Authorize]
-[AllowAnonymous]
+[Authorize]
 [ApiController]
 [Route("api/UserService/[controller]")]
 
 public class OrganizationController : OysterFxController
 {
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] CreateOrganizationCommand command)
         => await SendCommand<CreateOrganizationCommand, Guid>(command);
+
+    [HttpGet("get-all")]
+    public async Task<IActionResult> GetAll([FromQuery] GetAllOrganizationQuery request)
+        => await ExecuteQueryAsync<GetAllOrganizationQuery, IEnumerable<GetAllOrganizationQueryResult?>>(request);
 }

@@ -1,8 +1,7 @@
 ﻿namespace Insurance.UserService.Endpoints.Api.Extensions.Db;
 
-using Insurance.UserService.Infra.Persistence.RDB.Commands;
+using Insurance.UserService.Infra.Persistence.RDB.Queries;
 using Microsoft.EntityFrameworkCore;
-using OysterFx.Infra.Persistence.RDB.Commands.Interceptors;
 
 public static class DbExtensions
 {
@@ -19,10 +18,10 @@ public static class DbExtensions
         //     options.AddInterceptors(new AddAuditDataInterceptor());
         // });
 
-        //services.AddDbContext<InsuranceQueryDbContext>(options =>
-        //{
-        //    options.UseNpgsql(connectionStrings!.QueryDb);
-        //});
+        services.AddDbContext<InsuranceUserServiceQueryDbContext>(options =>
+        {
+            options.UseNpgsql(connectionStrings!.DefaultConnection);
+        });
 
         return services;
     }
