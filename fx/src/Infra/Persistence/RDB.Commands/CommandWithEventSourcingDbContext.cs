@@ -15,7 +15,6 @@ public abstract class CommandWithEventSourcingDbContext : CommandDbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        optionsBuilder.AddInterceptors(new AddOutBoxEventSourcingInterceptor());
         optionsBuilder.AddInterceptors(new AddAuditDataInterceptor());
     }
 

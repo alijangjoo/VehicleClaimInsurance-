@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\fx\src\Endpoints\OysterFx.Endpoints.Api\OysterFx.Endpoints.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\..\fx\src\Infra\Auth\UserServices\OysterFx.Infra.Auth.UserServices.csproj" />
     <ProjectReference Include="..\..\..\..\CacheService\src\Infra\CallerService\Insurance.CacheService.Infra.CallerService.csproj" />
     <ProjectReference Include="..\..\..\..\CoreService\src\Infra\InternalServices\UserApiCaller\Insurance.Infra.InternalServices.UserApiCaller.csproj" />
     <ProjectReference Include="..\..\..\..\PanelPayamakService\src\Infra\KavehNegarProvider\Insurance.PanelPayamakService.Infra.KavehNegarProvider.csproj" />

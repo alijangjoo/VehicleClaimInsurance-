@@ -21,3 +21,8 @@ docker system prune -f
 
 # Now try starting again
 docker-compose up -d
+
+## hashicorp consul installation
+```cmd
+docker run -d --name consul-server -p 8500:8500 -p 8600:8600/udp hashicorp/consul:1.16 agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+```

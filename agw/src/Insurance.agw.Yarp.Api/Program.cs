@@ -5,9 +5,42 @@ using Microsoft.OpenApi.Models;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
+using Winton.Extensions.Configuration.Consul;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Consul as Configuration Provider
+var consulEnabled = builder.Configuration.GetValue<bool>("Consul:Enabled", false);
+if (consulEnabled)
+{
+    var consulAddress = builder.Configuration["Consul:Address"] ?? "http://localhost:8500";
+    var consulKey = builder.Configuration["Consul:Key"] ?? "yarp-api-gateway/appsettings.json";
+    var consulToken = builder.Configuration["Consul:Token"];
+
+    builder.Configuration.AddConsul(
+        consulKey,
+        options =>
+        {
+            options.ConsulConfigurationOptions = cco =>
+            {
+                cco.Address = new Uri(consulAddress);
+                if (!string.IsNullOrEmpty(consulToken))
+                {
+                    cco.Token = consulToken;
+                }
+            };
+            options.Optional = true; // Continue if Consul is unavailable
+            options.ReloadOnChange = true; // Watch for changes in Consul
+            options.OnLoadException = exceptionContext =>
+            {
+                // Log error but continue with local configuration
+                Console.WriteLine($"Error loading configuration from Consul: {exceptionContext.Exception.Message}");
+                exceptionContext.Ignore = true;
+            };
+        })
+        .AddEnvironmentVariables();
+}
 
 var config = builder.Configuration;
 

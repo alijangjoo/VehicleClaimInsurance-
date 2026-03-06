@@ -12,10 +12,12 @@ using OysterFx.Endpoints.Api.Controllers;
 
 public class OrganizationController : OysterFxController
 {
+    [Authorize(Policy = "Organization.Create")]
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] CreateOrganizationCommand command)
         => await SendCommand<CreateOrganizationCommand, Guid>(command);
 
+    [Authorize(Policy = "Organization.GetAll")]
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll([FromQuery] GetAllOrganizationQuery request)
         => await ExecuteQueryAsync<GetAllOrganizationQuery, IEnumerable<GetAllOrganizationQueryResult?>>(request);

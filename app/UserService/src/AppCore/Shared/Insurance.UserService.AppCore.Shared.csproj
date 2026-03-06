@@ -9,6 +9,7 @@
   <ItemGroup>
     <Folder Include="AAA\Services\Dtos\" />
     <Folder Include="OtpCodeContracts\OtpCodes\Queries\" />
+    <Folder Include="Permissions\Services\" />
   </ItemGroup>
 
   <ItemGroup>

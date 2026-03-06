@@ -1,13 +1,15 @@
 ﻿namespace Insurance.CoreService.Endpoints.Api;
 
 using Elastic.Apm.NetCoreAll;
-using System.Diagnostics;
 using HealthChecks.UI.Client;
+using Insurance.CacheService.Infra.CallerService.Models;
 using Insurance.CoreService.Endpoints.Api.Extensions;
 using Insurance.CoreService.Endpoints.Api.Extensions.Db;
+using Insurance.CoreService.Endpoints.Api.Extensions.Permissions;
 using Insurance.CoreService.Endpoints.Api.Extensions.Swaggers.Extentions;
 using Insurance.CoreService.Endpoints.Api.Middlewares;
 using Insurance.Infra.InternalServices.UserApiCaller.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -15,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OysterFx.Endpoints.Api.Extensions.DI;
 using OysterFx.Endpoints.Api.ModelBindings;
 using OysterFx.Infra.Auth.JwtServices;
+using System.Diagnostics;
 
 public static class Hosting
 {
@@ -29,6 +32,9 @@ public static class Hosting
             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables();
 
+        // ثبت Authorization Handler
+        builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+
         builder.Services.AddOysterFxApiCore("OysterFx", "Insurance", "Insurance.CoreService");
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddNonValidatingValidator();
@@ -38,10 +44,10 @@ public static class Hosting
         builder.Services.AddSwaggerDocumentation("Insurance Core Service API", "v1");
 
         builder.Services.AddUserServices(builder.Configuration);
-        // builder.Services.AddTransient<IJwtTokenGeneratorService, JwtTokenGeneratorService>(); / TODO
         builder.Services.AddJwtAuthentication(configuration);
         builder.Services.AddJwtUserInfoService();
         builder.Services.AddRateLimitServices(configuration);
+        builder.Services.AddCacheServices(builder.Configuration);
         return builder.Build();
 
     }
