@@ -1,3 +1,4 @@
+using Elastic.Apm.NetCoreAll;
 using FluentValidation;
 using Insurance.CacheService.Endpoints.Api.Models.Configuration;
 using Insurance.CacheService.Endpoints.Api.Models.Dtos.GetFromCache;
@@ -7,6 +8,7 @@ using Insurance.CacheService.Endpoints.Api.Validators;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System.Diagnostics;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
 
@@ -16,6 +18,9 @@ try
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
+
+    // Add Elastic APM
+    builder.Services.AddAllElasticApm();
 
     builder.Services.Configure<CacheOptions>(
         builder.Configuration.GetSection(CacheOptions.SectionName));
@@ -71,6 +76,13 @@ try
     });
 
     var app = builder.Build();
+
+    // Configure W3C Activity format for distributed tracing
+    Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+    Activity.ForceDefaultIdFormat = true;
+
+    // Use Elastic APM
+    app.UseAllElasticApm(builder.Configuration);
 
     app.UseResponseCompression();
 

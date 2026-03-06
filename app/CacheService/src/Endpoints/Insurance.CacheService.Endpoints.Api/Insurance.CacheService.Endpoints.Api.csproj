@@ -17,6 +17,8 @@
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="7.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
+    <!-- Elastic APM -->
+    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.27.0" />
   </ItemGroup>
 
 </Project>

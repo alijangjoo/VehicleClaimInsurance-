@@ -1,6 +1,7 @@
 ﻿namespace Insurance.CoreService.Endpoints.Api;
 
-using Elastic.Apm.AspNetCore;
+using Elastic.Apm.NetCoreAll;
+using System.Diagnostics;
 using HealthChecks.UI.Client;
 using Insurance.CoreService.Endpoints.Api.Extensions;
 using Insurance.CoreService.Endpoints.Api.Extensions.Db;
@@ -21,7 +22,7 @@ public static class Hosting
     {
         IConfiguration configuration = builder.Configuration;
 
-        builder.Services.AddElasticApmForAspNetCore();
+        builder.Services.AddAllElasticApm();
 
         builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -87,7 +88,10 @@ public static class Hosting
             app.UseTokenProcessing();
         }
 
-        app.UseElasticApm();
+        Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+        Activity.ForceDefaultIdFormat = true;
+        
+        app.UseAllElasticApm(app.Configuration);
 
         var controllerBuilder = app.MapControllers();
         return app;

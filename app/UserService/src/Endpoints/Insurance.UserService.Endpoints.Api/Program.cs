@@ -1,4 +1,5 @@
-﻿using Insurance.CacheService.Infra.CallerService.Models;
+﻿using Elastic.Apm.NetCoreAll;
+using Insurance.CacheService.Infra.CallerService.Models;
 using Insurance.Infra.InternalServices.UserApiCaller.Models;
 using Insurance.PanelPayamakService.Infra.KavehNegarProvider;
 using Insurance.UserService.AppCore.AppServices.AAA.Services;
@@ -22,11 +23,15 @@ using OysterFx.Endpoints.Api.ModelBindings;
 using OysterFx.Infra.Auth.JwtServices;
 using Suspect.TaskPro.AppCore.DomainServices.OtpCodeServices;
 using Suspect.TaskPro.AppCore.Shared.AAA.Services;
+using System.Diagnostics;
 using System.Text;
 using AuthenticationService = Insurance.UserService.AppCore.AppServices.AAA.Services.AuthenticationService;
 using IAuthenticationService = Insurance.UserService.AppCore.Shared.AAA.Services.IAuthenticationService;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Elastic APM
+builder.Services.AddAllElasticApm();
 
 builder.Services.AddOysterFxApiCore("OysterFx", "Insurance", "Insurance.UserService");
 builder.Services.AddEndpointsApiExplorer();
@@ -155,11 +160,18 @@ if (app.Environment.IsDevelopment())
     }
 }
 
+// Configure W3C Activity format for distributed tracing
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerMiddleware("Insurance UserService API v1");
 }
+
+// Use Elastic APM
+app.UseAllElasticApm(builder.Configuration);
 
 app.UseHttpsRedirection();
 

@@ -1,10 +1,15 @@
-﻿using Hangfire;
+﻿using Elastic.Apm.NetCoreAll;
+using Hangfire;
 using Hangfire.EntityFrameworkCore;
 using Insurance.JobService.Endpoints.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using OysterFx.Infra.EventBus.Outbox;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Elastic APM
+builder.Services.AddAllElasticApm();
 
 builder.Services.AddDbContext<JobServiceDbContext>(options =>
 {
@@ -48,6 +53,13 @@ builder.Services.AddControllers();
 builder.Services.AddEventOutbox<JobServiceDbContext>();
 
 var app = builder.Build();
+
+// Configure W3C Activity format for distributed tracing
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
+
+// Use Elastic APM
+app.UseAllElasticApm(builder.Configuration);
 
 app.UseHangfireDashboard("/hangfire");
 
