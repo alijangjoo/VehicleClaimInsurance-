@@ -10,7 +10,6 @@ using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Consul as Configuration Provider
 var consulEnabled = builder.Configuration.GetValue<bool>("Consul:Enabled", false);
 if (consulEnabled)
 {
@@ -30,11 +29,10 @@ if (consulEnabled)
                     cco.Token = consulToken;
                 }
             };
-            options.Optional = true; // Continue if Consul is unavailable
-            options.ReloadOnChange = true; // Watch for changes in Consul
+            options.Optional = true;
+            options.ReloadOnChange = true;
             options.OnLoadException = exceptionContext =>
             {
-                // Log error but continue with local configuration
                 Console.WriteLine($"Error loading configuration from Consul: {exceptionContext.Exception.Message}");
                 exceptionContext.Ignore = true;
             };

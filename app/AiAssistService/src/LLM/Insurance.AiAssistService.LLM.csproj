@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AppServices\Insurance.AiAssistService.AppServices.csproj" />
+    <ProjectReference Include="..\Shared\Insurance.AiAssistService.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -11,6 +11,7 @@
     <Project Path="app/AiAssistService/src/Domain/Insurance.AiAssistService.Domain.csproj" />
     <Project Path="app/AiAssistService/src/Infra/Insurance.AiAssistService.Infra.csproj" />
     <Project Path="app/AiAssistService/src/LLM/Insurance.AiAssistService.LLM.csproj" />
+    <Project Path="app/AiAssistService/src/Shared/Insurance.AiAssistService.Shared.csproj" />
     <Project Path="app/AiAssistService/src/STT/Insurance.AiAssistService.STT.csproj" />
   </Folder>
   <Folder Name="/app/CacheService/" />
