@@ -158,11 +158,16 @@ if (app.Environment.IsDevelopment())
 
     try
     {
-        // روش 1: حذف و ایجاد مجدد دیتابیس (سریع‌ترین روش برای توسعه)
         Console.WriteLine("🔄 Dropping and recreating database...");
-        //context.Database.EnsureDeleted();
-        //context.Database.Migrate();
-        Console.WriteLine("✅ Database reset and seeded successfully!");
+
+        if (context.Database.EnsureCreated())
+        {
+            Console.WriteLine("✅ Database created successfully!");
+        }
+        else
+        {
+            Console.WriteLine("ℹ️ Database already exists, skipping reset...");
+        }
     }
     catch (Exception ex)
     {

@@ -5,7 +5,14 @@
   </Folder>
   <Folder Name="/app/" />
   <Folder Name="/app/AiAssistService/" />
-  <Folder Name="/app/AiAssistService/src/" />
+  <Folder Name="/app/AiAssistService/src/">
+    <Project Path="app/AiAssistService/src/Api/Insurance.AiAssistService.Api.csproj" />
+    <Project Path="app/AiAssistService/src/AppServices/Insurance.AiAssistService.AppServices.csproj" />
+    <Project Path="app/AiAssistService/src/Domain/Insurance.AiAssistService.Domain.csproj" />
+    <Project Path="app/AiAssistService/src/Infra/Insurance.AiAssistService.Infra.csproj" />
+    <Project Path="app/AiAssistService/src/LLM/Insurance.AiAssistService.LLM.csproj" />
+    <Project Path="app/AiAssistService/src/STT/Insurance.AiAssistService.STT.csproj" />
+  </Folder>
   <Folder Name="/app/CacheService/" />
   <Folder Name="/app/CacheService/src/" />
   <Folder Name="/app/CacheService/src/Endpoints/">

@@ -7,22 +7,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OysterFx.Endpoints.Api.Controllers;
 
-// [Authorize]
-[AllowAnonymous]
+[Authorize]
 [ApiController]
 [Route("api/UserService/[controller]")]
 public class PermissionController : OysterFxController
 {
-    
-    [HttpPost("system")]
+    [Authorize(Policy = "Permission.Create")]
+    [HttpPost("create-system")]
     public async Task<IActionResult> CreateSystemPermission([FromBody] CreateSystemPermissionCommand command)
         => await SendCommand<CreateSystemPermissionCommand, Guid>(command);
 
-    [HttpPost("organization")]
+    [Authorize(Policy = "Permission.Create")]
+    [HttpPost("create-organization")]
     public async Task<IActionResult> CreateOrganizationPermission([FromBody] CreateOrganizationPermissionCommand command)
         => await SendCommand<CreateOrganizationPermissionCommand, Guid>(command);
 
-    [HttpPost("application")]
+    [Authorize(Policy = "Permission.Create")]
+    [HttpPost("create-application")]
     public async Task<IActionResult> CreateApplicationPermission([FromBody] CreateApplicationPermissionCommand command)
         => await SendCommand<CreateApplicationPermissionCommand, Guid>(command);
 }

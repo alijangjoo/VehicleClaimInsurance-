@@ -25,6 +25,7 @@ public class AuthController : OysterFxController
         _userCommandRepository = userCommandRepository;
     }
 
+    [Authorize(Policy = "Auth.Register")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {

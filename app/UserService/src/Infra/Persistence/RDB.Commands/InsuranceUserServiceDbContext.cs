@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Logging;
 using OysterFx.AppCore.Domain.ValueObjects;
 using OysterFx.Infra.Persistence.RDB.Commands.Interceptors;
 using OysterFx.Infra.Persistence.RDB.Commands.ValueConversions;
@@ -193,12 +194,16 @@ public class InsuranceUserServiceDbContext : IdentityDbContext<Account, AppRole,
 
 
 
-        // SeedData.Seed(builder);
+       //SeedData.Seed(builder);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
+        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information)
+                 .EnableSensitiveDataLogging()
+                 .EnableDetailedErrors();
+
         optionsBuilder.AddInterceptors(new AddAuditDataInterceptor());
 
         optionsBuilder.ConfigureWarnings(warnings =>

@@ -6,17 +6,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OysterFx.Endpoints.Api.Controllers;
 
-// [Authorize]
-[AllowAnonymous]
+[Authorize]
 [ApiController]
 [Route("api/UserService/[controller]")]
 
 public class MembershipController : OysterFxController
 {
+    [Authorize(Policy = "Membership.Create")]
     [HttpPost("add-membership")]
     public async Task<IActionResult> AddMembership([FromBody] AddMembershipCommand command)
-    => await SendCommand<AddMembershipCommand, bool>(command);
+        => await SendCommand<AddMembershipCommand, Guid>(command);
 
+    [Authorize(Policy = "Membership.AssignRole")]
     [HttpPost("assign-role")]
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleToMembershipCommand command)
         => await SendCommand<AssignRoleToMembershipCommand, bool>(command);
